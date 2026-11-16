@@ -1,0 +1,2855 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MUDIE — Cine según cómo te sientes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+          },
+          colors: {
+            mudie: {
+              bg: '#0B0616',
+              surface: '#120924',
+              card: '#190D33',
+              deep: '#2D1657',
+              border: '#3B1E73',
+              lilac: '#C084FC',
+              violet: '#A855F7',
+              soft: '#E9D5FF',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #0B0616;
+      color: #F3E8FF;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Fondo ambiental sutil */
+    .ambient-glow {
+      background:
+        radial-gradient(circle at 15% 15%, rgba(168, 85, 247, 0.14) 0%, transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(45, 22, 87, 0.45) 0%, transparent 50%),
+        #0B0616;
+    }
+
+    /* Scrollbar personalizado */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0616;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2D1657;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #A855F7;
+    }
+
+    /* Animaciones de entrada de mensajes */
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .msg-enter {
+      animation: fadeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Indicador de escritura */
+    .typing-dot {
+      animation: typingBounce 1.4s infinite ease-in-out both;
+    }
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes typingBounce {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Póster fallback estilizado */
+    .poster-fallback {
+      background: linear-gradient(145deg, #2D1657 0%, #120924 55%, #1E0E3E 100%);
+    }
+  </style>
+</head>
+<body class="ambient-glow min-h-screen flex flex-col selection:bg-purple-500/30 selection:text-purple-200">
+
+  <!-- HEADER LIMPIO -->
+  <header class="sticky top-0 z-30 backdrop-blur-xl bg-[#0B0616]/85 border-b border-[#2D1657]/80">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <!-- Marca y Logo SVG de Claqueta Cinematográfica -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2D1657] to-[#170B2E] border border-[#C084FC]/40 flex items-center justify-center shadow-lg shadow-purple-950/50">
+          <!-- Logo SVG Claqueta Violeta Oscuro y Lila -->
+          <svg class="w-6 h-6" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <!-- Parte superior articulada de la claqueta -->
+            <g transform="rotate(-11 4 11)">
+              <rect x="4" y="6" width="24" height="5.5" rx="1.5" fill="#2D1657" stroke="#C084FC" stroke-width="1.5"/>
+              <path d="M8.5 6L11 11.5M14.5 6L17 11.5M20.5 6L23 11.5" stroke="#C084FC" stroke-width="1.8" stroke-linecap="round"/>
+            </g>
+            <!-- Cuerpo inferior de la claqueta -->
+            <rect x="4" y="12.5" width="24" height="14.5" rx="2.5" fill="#190D33" stroke="#C084FC" stroke-width="1.6"/>
+            <!-- Detalle lila interior (play / foco emocional) -->
+            <path d="M13.5 16.5L19.8 19.8L13.5 23.1V16.5Z" fill="#C084FC"/>
+          </svg>
+        </div>
+        <div>
+          <span class="text-xl font-bold tracking-wider bg-gradient-to-r from-[#F3E8FF] via-[#C084FC] to-[#A855F7] bg-clip-text text-transparent">
+            MUDIE
+          </span>
+          <p class="text-[11px] text-purple-300/70 hidden sm:block leading-none mt-0.5">
+            Cine que acompaña lo que sientes
+          </p>
+        </div>
+      </div>
+
+      <!-- Botón Reiniciar Conversación -->
+      <button
+        id="resetBtn"
+        type="button"
+        title="Reiniciar conversación"
+        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium text-purple-200 bg-[#190D33] hover:bg-[#2D1657] border border-[#3B1E73] hover:border-[#C084FC]/60 transition-all duration-200 shadow-sm active:scale-95"
+      >
+        <svg class="w-4 h-4 text-[#C084FC]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+          <path d="M3 3v5h5" />
+        </svg>
+        <span>Nueva charla</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL DEL CHAT -->
+  <main class="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 flex flex-col">
+    <!-- Lista de mensajes -->
+    <div id="chatMessages" class="flex-1 space-y-5 pb-4 overflow-y-auto">
+      <!-- Los mensajes se renderizan dinámicamente aquí -->
+    </div>
+
+    <!-- Indicador de escritura (oculto por defecto) -->
+    <div id="typingIndicator" class="hidden mb-4 msg-enter">
+      <div class="inline-flex items-center gap-3 px-4 py-3 rounded-2xl rounded-tl-sm bg-[#120924] border border-[#2D1657] shadow-md">
+        <div class="w-6 h-6 rounded-lg bg-[#2D1657] flex items-center justify-center text-[#C084FC]">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 32 32" fill="none">
+            <rect x="4" y="12" width="24" height="14" rx="2" fill="#190D33" stroke="#C084FC" stroke-width="2"/>
+            <path d="M13 16L19 19L13 22V16Z" fill="#C084FC"/>
+          </svg>
+        </div>
+        <div class="flex items-center gap-1.5 py-1">
+          <span class="w-2 h-2 rounded-full bg-[#C084FC] typing-dot"></span>
+          <span class="w-2 h-2 rounded-full bg-[#C084FC] typing-dot"></span>
+          <span class="w-2 h-2 rounded-full bg-[#C084FC] typing-dot"></span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- BARRA INFERIOR DE ENTRADA DE TEXTO -->
+  <footer class="sticky bottom-0 z-20 bg-gradient-to-t from-[#0B0616] via-[#0B0616]/95 to-transparent pt-3 pb-4 px-4 sm:px-6">
+    <div class="max-w-4xl mx-auto">
+      <form id="chatForm" class="relative flex items-end gap-2 bg-[#120924] border border-[#3B1E73] focus-within:border-[#C084FC] rounded-2xl p-2 shadow-xl shadow-black/40 transition-colors">
+        <textarea
+          id="userInput"
+          rows="1"
+          placeholder="Cuéntame cómo te sientes hoy o qué necesitas experimentar..."
+          class="w-full bg-transparent text-purple-50 placeholder-purple-300/45 text-sm sm:text-base px-3 py-2.5 resize-none focus:outline-none max-h-36 leading-relaxed"
+        ></textarea>
+        <button
+          id="sendBtn"
+          type="submit"
+          aria-label="Enviar mensaje"
+          class="shrink-0 p-3 rounded-xl bg-gradient-to-r from-[#9333EA] to-[#C084FC] hover:from-[#A855F7] hover:to-[#D8B4FE] text-[#0B0616] font-semibold transition-all duration-200 shadow-md shadow-purple-900/40 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+        >
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </form>
+      <p class="text-center text-[11px] text-purple-300/45 mt-2">
+        Comparte lo que sientes con calma; juntos encontraremos la historia adecuada para tu momento.
+      </p>
+    </div>
+  </footer>
+
+  <!-- MODAL DETALLADO PARA PELÍCULAS SECUNDARIAS Y TERCIARIAS -->
+  <div
+    id="movieModal"
+    class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalTitle"
+  >
+    <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-[#120924] border border-[#3B1E73] shadow-2xl shadow-purple-950/80 p-5 sm:p-7 msg-enter">
+      <!-- Botón cerrar modal -->
+      <button
+        id="closeModalBtn"
+        type="button"
+        aria-label="Cerrar ficha de película"
+        class="sticky top-0 float-right z-10 w-9 h-9 rounded-full bg-[#2D1657]/90 hover:bg-[#A855F7] text-purple-100 hover:text-[#0B0616] flex items-center justify-center transition-colors shadow-md"
+      >
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Contenido dinámico del modal -->
+      <div id="modalContent" class="clear-both"></div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * BASE DE DATOS CURADA DE PELÍCULAS DE MUDIE
+     * Nota de privacidad: Los campos `idealPara` y `fraseEjemplo` son estrictamente para uso interno
+     * del modelo de lenguaje y NUNCA se muestran en la interfaz ni en las respuestas del chat.
+     */
+    const MOVIE_CATALOG = [
+      // --- ALEGRÍA / FELICIDAD ---
+      {
+        id: "mamma-mia",
+        categoria: "Alegría/Felicidad",
+        titulo: "Mamma Mia!",
+        anio: "2008",
+        pais: "Reino Unido / Estados Unidos",
+        director: "Phyllida Lloyd",
+        emocion: "Alegría / Felicidad",
+        tono: "Alegre / Optimista",
+        ritmo: "Energético",
+        intensidad: "Alta",
+        idealPara: "Querés algo liviano que mejore el día",
+        fraseEjemplo: "Quiero algo que me haga reír",
+        sinopsis: "En una hermosa isla griega, Sophie está a punto de casarse y sueña con que su padre la acompañe al altar. Sin saber quién es, invita en secreto a los tres antiguos amores de su madre. Entre música y canciones de ABBA, reencuentros y situaciones inesperadas, madre e hija viven días que las acercan a su pasado y a su futuro.",
+        porQueVerla: "Porque transmite alegría, libertad y amor a través de la música, evocando recuerdos, veranos inolvidables y esa nostalgia por momentos que quisiéramos volver a vivir.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTA2MDU0MjM0MzReQTJeQWpwZ15BbWU3MDYwNzgwNzE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "hairspray",
+        categoria: "Alegría/Felicidad",
+        titulo: "Hairspray",
+        anio: "2007",
+        pais: "Estados Unidos",
+        director: "Adam Shankman",
+        emocion: "Alegría",
+        tono: "Luminoso",
+        ritmo: "Ágil",
+        intensidad: "Baja",
+        idealPara: "Querés un musical colorido y optimista para levantar el ánimo",
+        fraseEjemplo: "Quiero un musical divertido, tipo Mamma Mia",
+        sinopsis: "Una adolescente de Baltimore en los años 60 sueña con bailar en un programa de televisión y lucha por la integración racial.",
+        porQueVerla: "Es un musical contagioso sobre ser uno mismo.",
+        dondeVerla: "Prime Video y Google Play Películas",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTIyMzA5NTYyNV5BMl5BanBnXkFtZTcwMzkyNzE0MQ@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "legalmente-rubia",
+        categoria: "Alegría/Felicidad",
+        titulo: "Legalmente rubia",
+        anio: "2001",
+        pais: "Estados Unidos",
+        director: "Robert Luketic",
+        emocion: "Entusiasmo",
+        tono: "Luminoso",
+        ritmo: "Ágil",
+        intensidad: "Baja",
+        idealPara: "Necesitás un empujón de confianza y reírte un rato",
+        fraseEjemplo: "Necesito algo liviano que me dé confianza",
+        sinopsis: "Elle Woods entra a la facultad de Derecho de Harvard para recuperar a su ex y descubre que su talento va mucho más allá de lo que esperaban.",
+        porQueVerla: "Humor liviano con un mensaje que empodera.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BNTEyNjUwMTkxMV5BMl5BanBnXkFtZTcwNjk0NDk0NA@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "cantando-bajo-la-lluvia",
+        categoria: "Alegría/Felicidad",
+        titulo: "Cantando bajo la lluvia",
+        anio: "1952",
+        pais: "Estados Unidos",
+        director: "Stanley Donen y Gene Kelly",
+        emocion: "Alegría",
+        tono: "Luminoso",
+        ritmo: "Ágil",
+        intensidad: "Baja",
+        idealPara: "Querés algo clásico que te levante el ánimo con música y baile",
+        fraseEjemplo: "Quiero algo clásico y alegre que me dé ganas de bailar",
+        sinopsis: "Un astro del cine mudo en Hollywood enfrenta la llegada del sonoro mientras se enamora de una joven aspirante a actriz.",
+        porQueVerla: "Alegría pura y atemporal, con una de las escenas más felices de la historia del cine.",
+        dondeVerla: "HBO Max",
+        imagen: "https://m.media-amazon.com/images/M/MV5BZDRjNGViMjQtOThlMi00MTA3LThkYzQtNzJkYjBkMGE0YzE1XkEyXkFqcGdeQXVyNDYyMDk5MTU@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "intensamente",
+        categoria: "Alegría/Felicidad",
+        titulo: "Intensamente",
+        anio: "2015",
+        pais: "Estados Unidos",
+        director: "Pete Docter y Ronnie Del Carmen",
+        emocion: "Alegría / Nostalgia",
+        tono: "Cálido / Emotivo",
+        ritmo: "Dinámico",
+        intensidad: "Media",
+        idealPara: "Querés sentir algo lindo y reconectar con recuerdos",
+        fraseEjemplo: "Quiero ver algo que me deje contenta o me genere nostalgia",
+        sinopsis: "Riley es una niña que debe adaptarse a una nueva vida cuando su familia se muda de ciudad. Dentro de su mente, sus emociones —Alegría, Tristeza, Furia, Temor y Desagrado— intentan ayudarla a enfrentar los cambios y descubrir que todas las emociones son necesarias para crecer.",
+        porQueVerla: "Porque nos recuerda la importancia de valorar los pequeños momentos felices, aceptar lo que sentimos y atesorar los recuerdos que nos hacen ser quienes somos.",
+        dondeVerla: "Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BOTgxMDQwMDk0OF5BMl5BanBnXkFtZTgwNjU5OTg2NDE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "school-of-rock",
+        categoria: "Alegría/Felicidad",
+        titulo: "School of Rock",
+        anio: "2003",
+        pais: "Estados Unidos",
+        director: "Richard Linklater",
+        emocion: "Alegría",
+        tono: "Divertido, rebelde y energético",
+        ritmo: "Ágil",
+        intensidad: "Baja / Media",
+        idealPara: "Querés reírte y sentir ganas de animarte a algo",
+        fraseEjemplo: "Quiero algo divertido con rock y mucha energía",
+        sinopsis: "Un músico fracasado consigue trabajo como maestro sustituto en una escuela privada. Sin seguir el programa, convierte a sus alumnos en una banda de rock para competir en una batalla de bandas.",
+        porQueVerla: "Porque es literalmente energía + música + chicos descubriendo lo que aman + Jack Black. Está llena de alegría, movimiento y humor.",
+        dondeVerla: "Paramount+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMjEwOTMzNjYzMl5BMl5BanBnXkFtZTcwNjczMTQyMQ@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "grand-budapest-hotel",
+        categoria: "Alegría/Felicidad",
+        titulo: "El Gran Hotel Budapest",
+        anio: "2014",
+        pais: "Estados Unidos / Alemania",
+        director: "Wes Anderson",
+        emocion: "Desconexión",
+        tono: "Neutro e ingenioso",
+        ritmo: "Ágil",
+        intensidad: "Media",
+        idealPara: "Querés un mundo visualmente original y un humor ingenioso",
+        fraseEjemplo: "Quiero algo diferente, con un mundo único y buen humor",
+        sinopsis: "El conserje de un lujoso hotel europeo y su joven aprendiz se ven envueltos en el robo de una pintura valiosa y en la disputa por una herencia.",
+        porQueVerla: "Tiene un universo visual único y un humor muy ingenioso que transporta a otro mundo.",
+        dondeVerla: "Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMzM5NjUxOTEyMl5BMl5BanBnXkFtZTgwNjEyMDM0MDE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "elf",
+        categoria: "Alegría/Felicidad",
+        titulo: "Elf",
+        anio: "2003",
+        pais: "Estados Unidos",
+        director: "Jon Favreau",
+        emocion: "Alegría",
+        tono: "Luminoso",
+        ritmo: "Ágil",
+        intensidad: "Baja",
+        idealPara: "Querés ternura, humor y optimismo sin cinismo",
+        fraseEjemplo: "Quiero algo navideño y divertido",
+        sinopsis: "Un hombre criado por elfos en el Polo Norte viaja a Nueva York en busca de su verdadero padre.",
+        porQueVerla: "Su inocencia y su optimismo contagian.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMzUxNzkzMzQtYjIxZC00NzU0LThkYTQtZjNhNTljMTA1MDA1L2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "esperando-la-carroza",
+        categoria: "Alegría/Felicidad",
+        titulo: "Esperando la carroza",
+        anio: "1985",
+        pais: "Argentina",
+        director: "Alejandro Doria",
+        emocion: "Diversión / Alegría",
+        tono: "Cómico / Absurdo",
+        ritmo: "Dinámico",
+        intensidad: "Media",
+        idealPara: "Querés reírte y ver algo muy rioplatense",
+        fraseEjemplo: "Quiero algo que me haga reír y que sea bien rioplatense",
+        sinopsis: "Comedia negra argentina sobre una familia porteña y los enredos que surgen alrededor de la abuela, Mamá Cora, dejando al descubierto las mezquindades de sus hijos.",
+        porQueVerla: "Es un clásico del humor argentino, con personajes memorables y mucha ironía.",
+        dondeVerla: "YouTube",
+        imagen: "https://m.media-amazon.com/images/M/MV5BNzM1NTIwYzUtN2ZmMC00YjFhLTg2MmEtZGU0NTM2Mzk5ZTZkXkEyXkFqcGdeQXVyMTYzMDM0NTU@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "paddington-2",
+        categoria: "Alegría/Felicidad",
+        titulo: "Paddington 2",
+        anio: "2017",
+        pais: "Reino Unido / Francia",
+        director: "Paul King",
+        emocion: "Alegría",
+        tono: "Luminoso",
+        ritmo: "Ágil",
+        intensidad: "Baja",
+        idealPara: "Querés algo tierno y amable que te deje con una sonrisa",
+        fraseEjemplo: "Quiero algo dulce y divertido que me levante el ánimo",
+        sinopsis: "Paddington, el osito peruano, es acusado injustamente de robar un libro antiguo y termina preso, donde conquista a todos con su amabilidad.",
+        porQueVerla: "Es una comedia llena de ternura y buen humor, con un mensaje sobre la bondad y los pequeños gestos.",
+        dondeVerla: "Netflix / YouTube",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMmYwNWZlNzEtNjE4Zi00NzQ4LWI2YmUtOWZhNzZhZDYyNmVmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "amigos-intocables",
+        categoria: "Alegría/Felicidad",
+        titulo: "Amigos intocables (Intouchables)",
+        anio: "2011",
+        pais: "Francia",
+        director: "Olivier Nakache y Éric Toledano",
+        emocion: "Alegría / Calidez",
+        tono: "Cálido, divertido y emotivo",
+        ritmo: "Dinámico",
+        intensidad: "Media",
+        idealPara: "Querés reírte y emocionarte con una amistad inesperada",
+        fraseEjemplo: "Quiero algo divertido y emotivo sobre una amistad",
+        sinopsis: "Un aristócrata tetrapléjico contrata como cuidador a un joven de barrio recién salido de prisión, y entre ambos nace una amistad genuina. Está inspirada en una historia real.",
+        porQueVerla: "Tiene un equilibrio de humor y emoción, con dos protagonistas que se complementan.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTYxNDA3MDQwNl5BMl5BanBnXkFtZTcwNTU4Mzc1Nw@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "el-hijo-de-la-novia",
+        categoria: "Alegría/Felicidad",
+        titulo: "El hijo de la novia",
+        anio: "2001",
+        pais: "Argentina / España",
+        director: "Juan José Campanella",
+        emocion: "Alegría / Calidez",
+        tono: "Cálido, humorístico y emotivo",
+        ritmo: "Moderado",
+        intensidad: "Media",
+        idealPara: "Querés algo muy rioplatense, con humor y ternura",
+        fraseEjemplo: "Quiero algo rioplatense que me haga reír y me emocione",
+        sinopsis: "Un hombre agobiado por el trabajo ve su vida patas arriba cuando su padre quiere cumplir el sueño de casarse por iglesia con su madre, que tiene Alzheimer.",
+        porQueVerla: "Combina comedia y emoción, con personajes muy cercanos y una historia cálida.",
+        dondeVerla: "Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTc2OTc3NjI1NV5BMl5BanBnXkFtZTcwNDk2NzUyMQ@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "little-miss-sunshine",
+        categoria: "Alegría/Felicidad",
+        titulo: "Little Miss Sunshine",
+        anio: "2006",
+        pais: "Estados Unidos",
+        director: "Jonathan Dayton y Valerie Faris",
+        emocion: "Alegría / Diversión",
+        tono: "Cómico, tierno y excéntrico",
+        ritmo: "Dinámico",
+        intensidad: "Media",
+        idealPara: "Querés reírte con una familia desastrosa y sentir calidez",
+        fraseEjemplo: "Quiero algo gracioso y con corazón sobre una familia",
+        sinopsis: "Una familia disfuncional viaja en una camioneta vieja para llevar a la hija menor a un concurso de belleza infantil en California.",
+        porQueVerla: "Mezcla humor y ternura, y habla sobre aceptarse tal cual uno es.",
+        dondeVerla: "Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTgzNTgzODU0NV5BMl5BanBnXkFtZTcwMjEyMjMzMQ@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "ratatouille",
+        categoria: "Alegría/Felicidad",
+        titulo: "Ratatouille",
+        anio: "2007",
+        pais: "Estados Unidos",
+        director: "Brad Bird",
+        emocion: "Alegría",
+        tono: "Luminoso",
+        ritmo: "Dinámico",
+        intensidad: "Baja / Media",
+        idealPara: "Querés algo creativo y animado sobre animarte a perseguir lo que te apasiona",
+        fraseEjemplo: "Quiero algo lindo y divertido sobre cumplir un sueño",
+        sinopsis: "Remy, una rata con un talento enorme para la cocina, se alía con un joven pinche en un restaurante de París y sueña con convertirse en chef.",
+        porQueVerla: "Celebra la pasión y la creatividad con mucho humor y un París animado precioso.",
+        dondeVerla: "Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTMzODU0NTkxMF5BMl5BanBnXkFtZTcwMjQ4MzMzMw@@._V1_FMjpg_UX1000_.jpg"
+      },
+
+      // --- NOSTALGIA ---
+      {
+        id: "back-to-the-future",
+        categoria: "Nostalgia",
+        titulo: "Back to the Future (Volver al futuro)",
+        anio: "1985",
+        pais: "Estados Unidos",
+        director: "Robert Zemeckis",
+        emocion: "Nostalgia",
+        tono: "Divertido, aventurero y familiar",
+        ritmo: "Dinámico",
+        intensidad: "Media",
+        idealPara: "Querés volver a sentir la emoción de tu infancia y disfrutar una aventura",
+        fraseEjemplo: "Quiero algo que me haga acordar a cuando era chico y me divierta",
+        sinopsis: "Marty McFly viaja accidentalmente al pasado en una máquina del tiempo creada por el científico Doc Brown y debe encontrar la forma de volver a su época.",
+        porQueVerla: "Porque combina aventura, humor y entretenimiento, y tiene ese estilo clásico que despierta mucha nostalgia.",
+        dondeVerla: "Prime Video / HBO Max / Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "cinema-paradiso",
+        categoria: "Nostalgia",
+        titulo: "Cinema Paradiso (Nuevo Cinema Paradiso)",
+        anio: "1988",
+        pais: "Italia / Francia",
+        director: "Giuseppe Tornatore",
+        emocion: "Nostalgia",
+        tono: "Neutro y conmovedor",
+        ritmo: "Lento",
+        intensidad: "Alta",
+        idealPara: "Querés emocionarte recordando el pasado y el amor por el cine",
+        fraseEjemplo: "Quiero algo que me haga sentir nostalgia y me emocione",
+        sinopsis: "Un cineasta recuerda su infancia en un pueblo italiano y su amistad con el proyeccionista del cine local.",
+        porQueVerla: "Es un homenaje al cine y a los recuerdos, con un final inolvidable.",
+        dondeVerla: "YouTube",
+        imagen: "https://m.media-amazon.com/images/M/MV5BM2FhYjEyYmYtMDI1Yy00YTdlLWI2NWQtYmEzNzAxOGY1NjY2XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "stand-by-me",
+        categoria: "Nostalgia",
+        titulo: "Stand by Me (Cuenta conmigo)",
+        anio: "1986",
+        pais: "Estados Unidos",
+        director: "Rob Reiner",
+        emocion: "Nostalgia",
+        tono: "Cálido, emotivo y aventurero",
+        ritmo: "Moderado",
+        intensidad: "Alta",
+        idealPara: "Querés recordar la amistad y la infancia",
+        fraseEjemplo: "Quiero algo que me haga acordar a cuando era chico y a mis amigos",
+        sinopsis: "Cuatro amigos emprenden un viaje para encontrar el cuerpo de un chico desaparecido, viviendo una aventura que marcará su infancia.",
+        porQueVerla: "Porque muestra la amistad, el crecimiento y el paso de la infancia a la adolescencia con enorme honestidad.",
+        dondeVerla: "YouTube",
+        imagen: "https://m.media-amazon.com/images/M/MV5BODJmY2Y2OGQtMDg2My00N2Q3LWJmZTUtYTc2ODBjZDVlNDlhXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "perks-of-being-a-wallflower",
+        categoria: "Nostalgia",
+        titulo: "The Perks of Being a Wallflower (Las ventajas de ser invisible)",
+        anio: "2012",
+        pais: "Estados Unidos",
+        director: "Stephen Chbosky",
+        emocion: "Adolescencia / Nostalgia",
+        tono: "Emotivo, íntimo y juvenil",
+        ritmo: "Moderado",
+        intensidad: "Alta",
+        idealPara: "Querés conectar con historias sobre crecer y encontrar tu lugar",
+        fraseEjemplo: "Quiero algo que me haga sentir identificado o parte de algo",
+        sinopsis: "Charlie comienza el liceo intentando superar su timidez y encuentra nuevos amigos que lo ayudan a sentirse parte de algo.",
+        porQueVerla: "Porque habla de crecer, de sentirse diferente y encontrar personas con las que conectar.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BZThjMmQ5YjktMTUyMC00MjljLWJmMTAtOWIzNDIzY2VhNzQ0XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "sing-street",
+        categoria: "Nostalgia",
+        titulo: "Sing Street",
+        anio: "2016",
+        pais: "Irlanda",
+        director: "John Carney",
+        emocion: "Nostalgia",
+        tono: "Luminoso",
+        ritmo: "Medio",
+        intensidad: "Media",
+        idealPara: "Querés sentir la emoción de la adolescencia y la música de los 80",
+        fraseEjemplo: "Quiero algo con buena música que me dé nostalgia",
+        sinopsis: "En el Dublín de los años 80, un adolescente forma una banda para impresionar a una chica y escapar de su realidad.",
+        porQueVerla: "Una historia de primeros amores con una banda sonora que levanta el ánimo.",
+        dondeVerla: "YouTube",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMjEzODA3MDcxMl5BMl5BanBnXkFtZTgwODgxNDk3NzE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "que-bello-es-vivir",
+        categoria: "Nostalgia",
+        titulo: "¡Qué bello es vivir! (It's a Wonderful Life)",
+        anio: "1946",
+        pais: "Estados Unidos",
+        director: "Frank Capra",
+        emocion: "Nostalgia / Calidez",
+        tono: "Cálido, emotivo y navideño",
+        ritmo: "Moderado",
+        intensidad: "Alta",
+        idealPara: "Querés un clásico que te recuerde lo que importa",
+        fraseEjemplo: "Quiero un clásico emotivo que me haga valorar lo que tengo",
+        sinopsis: "En Nochebuena, un hombre desesperado recibe la visita de un ángel que le muestra cómo habría sido su pueblo si él nunca hubiera existido.",
+        porQueVerla: "Es un clásico del cine con mucha calidez que nos reconecta con el valor de nuestra propia vida.",
+        dondeVerla: "Mercado Play",
+        imagen: "https://m.media-amazon.com/images/M/MV5BZjc4NDZhZWMtNGEzYS00ZWU2LThlM2ItNTA0YzQ0OTExMTE2XkEyXkFqcGdeQXVyNjUwMzI2NzU@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "et",
+        categoria: "Nostalgia",
+        titulo: "E.T., el extraterrestre",
+        anio: "1982",
+        pais: "Estados Unidos",
+        director: "Steven Spielberg",
+        emocion: "Nostalgia / Asombro",
+        tono: "Tierno, emotivo y familiar",
+        ritmo: "Moderado",
+        intensidad: "Alta",
+        idealPara: "Querés volver a mirar el mundo con ojos de niño",
+        fraseEjemplo: "Quiero un clásico de mi infancia que me emocione",
+        sinopsis: "Un niño solitario se hace amigo de un extraterrestre que quedó varado en la Tierra y trata de ayudarlo a volver a casa.",
+        porQueVerla: "Es un clásico de aventuras que recupera la mirada inocente y llena de maravilla de la infancia.",
+        dondeVerla: "HBO Max",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTQ2ODFlMDAtNzdhOC00ZDYzLWE3YTMtNDU4ZGFmZmJmYTczXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "in-the-mood-for-love",
+        categoria: "Nostalgia",
+        titulo: "In the Mood for Love (Deseando amar)",
+        anio: "2000",
+        pais: "Hong Kong / Francia",
+        director: "Wong Kar-wai",
+        emocion: "Nostalgia / Anhelo",
+        tono: "Elegante, melancólico y sensual",
+        ritmo: "Lento",
+        intensidad: "Alta",
+        idealPara: "Querés una película visualmente hermosa sobre lo que no llegó a ser",
+        fraseEjemplo: "Quiero algo elegante y melancólico, que se sienta como un recuerdo",
+        sinopsis: "En el Hong Kong de 1962, dos vecinos descubren que sus parejas los engañan y empiezan a acercarse sin decir lo que sienten.",
+        porQueVerla: "Tiene una estética y una música inolvidables, y transmite la nostalgia por un amor contenido.",
+        dondeVerla: "MUBI",
+        imagen: "https://m.media-amazon.com/images/M/MV5BYWVjNjMwZTgtMGYyYy00NmVhLWE1NDItMzFhMmJkYTNjYjcwXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "big-fish",
+        categoria: "Nostalgia",
+        titulo: "Big Fish (El gran pez)",
+        anio: "2003",
+        pais: "Estados Unidos",
+        director: "Tim Burton",
+        emocion: "Nostalgia / Fantasía",
+        tono: "Fantástico, cálido y emotivo",
+        ritmo: "Moderado",
+        intensidad: "Alta",
+        idealPara: "Querés una historia fantástica sobre los recuerdos y la familia",
+        fraseEjemplo: "Quiero algo fantástico que me emocione y me haga pensar en mi familia",
+        sinopsis: "Un hijo intenta conocer de verdad a su padre, que está muriendo, a través de las historias fantásticas que siempre contó sobre su vida.",
+        porQueVerla: "Es un cuento visualmente hermoso sobre cómo recordamos a quienes queremos.",
+        dondeVerla: "HBO Max",
+        imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3tC4ZjY5Fz8FOpEeQ4KYzuElPMq9XB7tFnQt-USYKLr43sa6MPUg7YNQB&s=10"
+      },
+      {
+        id: "persepolis",
+        categoria: "Nostalgia",
+        titulo: "Persépolis",
+        anio: "2007",
+        pais: "Francia / Irán",
+        director: "Marjane Satrapi y Vincent Paronnaud",
+        emocion: "Nostalgia / Memoria",
+        tono: "Ingenioso, emotivo y agridulce",
+        ritmo: "Dinámico",
+        intensidad: "Alta",
+        idealPara: "Querés una película animada y adulta sobre crecer y recordar",
+        fraseEjemplo: "Quiero algo animado, distinto y con mensaje",
+        sinopsis: "Marjane cuenta, en animación en blanco y negro, su infancia en Irán durante la revolución islámica y su adolescencia lejos de su país.",
+        porQueVerla: "Es una autobiografía animada con mucho humor y dureza que habla del exilio y la identidad.",
+        dondeVerla: "Google Play Películas",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMGRkZThmYzEtYjQxZC00OWEzLThjYjAtYzFkMjY0NGZkZWI4XkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "la-vida-util",
+        categoria: "Nostalgia",
+        titulo: "La vida útil",
+        anio: "2010",
+        pais: "Uruguay / España",
+        director: "Federico Veiroj",
+        emocion: "Nostalgia / Amor al cine",
+        tono: "Melancólico, tierno y sutil",
+        ritmo: "Lento",
+        intensidad: "Media",
+        idealPara: "Querés una película uruguaya sobre el amor por el cine",
+        fraseEjemplo: "Quiero algo uruguayo que me haga querer el cine",
+        sinopsis: "Jorge, que trabaja desde hace décadas en la Cinemateca Uruguaya en Montevideo, enfrenta el cierre de la institución y un cambio en su vida.",
+        porQueVerla: "Es un homenaje a la cultura cinéfila de Montevideo, filmada en blanco y negro con enorme ternura.",
+        dondeVerla: "Antel TV",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTQ3NjM5MDk0Nl5BMl5BanBnXkFtZTcwMDQ4NjA5NA@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "verano-1993",
+        categoria: "Nostalgia",
+        titulo: "Verano 1993 (Estiu 1993)",
+        anio: "2017",
+        pais: "España",
+        director: "Carla Simón",
+        emocion: "Nostalgia / Infancia",
+        tono: "Íntimo, sensible y luminoso",
+        ritmo: "Lento",
+        intensidad: "Alta",
+        idealPara: "Querés una mirada delicada y real sobre la infancia",
+        fraseEjemplo: "Quiero algo sensible que me haga recordar mi infancia",
+        sinopsis: "Frida, de seis años, pasa el verano de 1993 con sus tíos en el campo catalán tras la muerte de su madre.",
+        porQueVerla: "Retrata con mucha sensibilidad el mundo infantil y los pequeños gestos de adaptación.",
+        dondeVerla: "MUBI",
+        imagen: "https://m.media-amazon.com/images/M/MV5BNjM3YzQ2MTQtYzZmZC00MDk0LWE4MDQtMWJlM2M1M2NjMjY2XkEyXkFqcGdeQXVyMTA0MjU0Ng@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "roma",
+        categoria: "Nostalgia",
+        titulo: "Roma",
+        anio: "2018",
+        pais: "México / Estados Unidos",
+        director: "Alfonso Cuarón",
+        emocion: "Nostalgia / Memoria",
+        tono: "Íntimo, contemplativo y emotivo",
+        ritmo: "Lento",
+        intensidad: "Alta",
+        idealPara: "Querés una película hermosa que se sienta como un recuerdo de infancia",
+        fraseEjemplo: "Quiero algo que me haga recordar y sentir",
+        sinopsis: "En la Ciudad de México de 1970, Cleo, empleada doméstica de una familia de clase media, atraviesa los cambios de ese año.",
+        porQueVerla: "Está filmada en blanco y negro y construida desde los recuerdos del director sobre su infancia.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTU0OTc3ODk4Ml5BMl5BanBnXkFtZTgwMzM4NzI5NjM@._V1_FMjpg_UX1000_.jpg"
+      },
+
+      // --- REFLEXIÓN ---
+      {
+        id: "eterno-resplandor",
+        categoria: "Reflexión",
+        titulo: "Eterno resplandor de una mente sin recuerdos",
+        anio: "2004",
+        pais: "Estados Unidos",
+        director: "Michel Gondry",
+        emocion: "Nostalgia / Reflexión",
+        tono: "Melancólico / Romántico",
+        ritmo: "Medio",
+        intensidad: "Alta",
+        idealPara: "Estás sensible y querés una historia que te haga pensar",
+        fraseEjemplo: "Estoy sensible y quiero algo que me haga pensar y recordar",
+        sinopsis: "La historia sigue a Joel y Clementine, una expareja que, después de terminar su relación, decide borrar todos sus recuerdos juntos mediante un procedimiento tecnológico. Mientras Joel atraviesa el proceso, comienza a darse cuenta de que no quiere olvidar a Clementine.",
+        porQueVerla: "Porque te hace reflexionar sobre el amor, los recuerdos y las relaciones. Te deja pensando en qué recuerdos valen la pena conservar.",
+        dondeVerla: "YouTube / Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTY4NzcwODg3Nl5BMl5BanBnXkFtZTcwNTEwOTMyMw@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "her",
+        categoria: "Reflexión",
+        titulo: "Her",
+        anio: "2013",
+        pais: "Estados Unidos",
+        director: "Spike Jonze",
+        emocion: "Soledad / Reflexión",
+        tono: "Íntimo / Contemplativo",
+        ritmo: "Lento / Medio",
+        intensidad: "Alta",
+        idealPara: "Querés reflexionar sobre vínculos y emociones",
+        fraseEjemplo: "Quiero reflexionar sobre el amor, la soledad y los vínculos",
+        sinopsis: "Theodore, un hombre solitario, desarrolla una relación amorosa con Samantha, un sistema operativo con inteligencia artificial que tiene una personalidad propia.",
+        porQueVerla: "Porque hace reflexionar sobre el amor, la soledad y la forma en que nos relacionamos con los demás.",
+        dondeVerla: "Amazon Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMjA1Nzk0OTM2OF5BMl5BanBnXkFtZTgwNjU2NjEwMDE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "la-vida-de-los-otros",
+        categoria: "Reflexión",
+        titulo: "La vida de los otros",
+        anio: "2006",
+        pais: "Alemania",
+        director: "Florian Henckel von Donnersmarck",
+        emocion: "Humanidad / Reflexión",
+        tono: "Dramático, serio y profundo",
+        ritmo: "Lento / Medio",
+        intensidad: "Alta",
+        idealPara: "Querés una historia que te haga cuestionar las decisiones y la moral",
+        fraseEjemplo: "Quiero algo que me deje pensando sobre las decisiones que toman las personas",
+        sinopsis: "Un agente de la policía secreta de Alemania Oriental vigila a un escritor y su pareja, pero poco a poco empieza a cuestionar sus propias decisiones y valores.",
+        porQueVerla: "Porque hace reflexionar sobre la moral, la libertad y hasta dónde pueden cambiar las personas frente a situaciones difíciles.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BNmQyNmJjM2ItNTQzYi00ZjMxLWFjMDYtZjUyN2YwZDk5YWQ2XkEyXkFqcGdeQXVyMjUzOTY1NTc@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "en-busca-de-la-felicidad",
+        categoria: "Reflexión",
+        titulo: "En busca de la felicidad",
+        anio: "2006",
+        pais: "Estados Unidos",
+        director: "Gabriele Muccino",
+        emocion: "Superación / Esperanza",
+        tono: "Inspirador, dramático y emotivo",
+        ritmo: "Moderado",
+        intensidad: "Alta",
+        idealPara: "Necesitás pensar sobre el esfuerzo, los sueños y no rendirte",
+        fraseEjemplo: "Quiero algo que me haga pensar sobre lo que estoy haciendo con mi vida",
+        sinopsis: "Chris Gardner atraviesa una situación económica muy difícil mientras intenta construir una vida mejor para él y su hijo.",
+        porQueVerla: "Porque muestra la perseverancia y la fuerza para salir adelante incluso en momentos muy difíciles.",
+        dondeVerla: "HBO Max / Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTQ5NjQ0NDI3NF5BMl5BanBnXkFtZTcwNDI0MjEzMw@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "walter-mitty",
+        categoria: "Reflexión",
+        titulo: "La increíble vida de Walter Mitty",
+        anio: "2013",
+        pais: "Estados Unidos",
+        director: "Ben Stiller",
+        emocion: "Inspiración / Autodescubrimiento",
+        tono: "Aventurero, emotivo y optimista",
+        ritmo: "Moderado / Dinámico",
+        intensidad: "Media / Alta",
+        idealPara: "Sentís que necesitás un cambio o animarte a salir de tu zona de confort",
+        fraseEjemplo: "Quiero algo que me haga pensar si estoy aprovechando realmente mi vida",
+        sinopsis: "Walter Mitty lleva una vida rutinaria mientras atraviesa diferentes imaginaciones hasta que una situación laboral lo lleva a vivir una verdadera aventura.",
+        porQueVerla: "Porque invita a animarse a vivir experiencias nuevas y dejar de imaginar la vida para empezar a vivirla.",
+        dondeVerla: "Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BODYwNDYxNDk1Nl5BMl5BanBnXkFtZTgwOTAwMTk2MDE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "soul",
+        categoria: "Reflexión",
+        titulo: "Soul",
+        anio: "2020",
+        pais: "Estados Unidos",
+        director: "Pete Docter y Kemp Powers",
+        emocion: "Existencia / Propósito",
+        tono: "Reflexivo, emotivo y cálido",
+        ritmo: "Moderado",
+        intensidad: "Alta",
+        idealPara: "Querés reflexionar sobre el propósito de la vida y las pequeñas cosas",
+        fraseEjemplo: "Quiero algo que me haga pensar qué es lo que realmente me hace feliz",
+        sinopsis: "Joe Gardner sueña con convertirse en un gran músico, pero una serie de acontecimientos lo lleva a cuestionarse qué significa realmente tener una vida plena.",
+        porQueVerla: "Porque plantea que el propósito de vivir no necesariamente está en cumplir un gran objetivo, sino en disfrutar el presente y valorar las pequeñas experiencias.",
+        dondeVerla: "Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BZGE1MDg5M2MtNTkyZS00MTY5LTg1YzUtZTlhZmM1Y2EwNmFmXkEyXkFqcGdeQXVyNjA3OTI0MDc@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "forrest-gump",
+        categoria: "Reflexión",
+        titulo: "Forrest Gump",
+        anio: "1994",
+        pais: "Estados Unidos",
+        director: "Robert Zemeckis",
+        emocion: "Nostalgia / Reflexión",
+        tono: "Emotivo, cálido y tragicómico",
+        ritmo: "Moderado",
+        intensidad: "Alta",
+        idealPara: "Querés reflexionar sobre la vida, el paso del tiempo y las experiencias vividas",
+        fraseEjemplo: "Quiero algo que me haga pensar sobre todo lo que pasa en la vida",
+        sinopsis: "Forrest Gump cuenta su vida mientras atraviesa diferentes momentos importantes de la historia de Estados Unidos y experimenta relaciones, pérdidas y cambios.",
+        porQueVerla: "Porque combina emoción y humor, y permite reflexionar sobre la vida, el amor, la amistad y el paso del tiempo.",
+        dondeVerla: "Paramount+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BNWIwODRlZTUtY2U3ZS00Yzg1LWJhNzYtMmZiYmEyNmU1NjMzXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "parasitos",
+        categoria: "Reflexión",
+        titulo: "Parásitos",
+        anio: "2019",
+        pais: "Corea del Sur",
+        director: "Bong Joon-ho",
+        emocion: "Injusticia / Reflexión",
+        tono: "Oscuro, satírico y tenso",
+        ritmo: "Dinámico",
+        intensidad: "Alta",
+        idealPara: "Querés reflexionar sobre las diferencias sociales, el dinero y las apariencias",
+        fraseEjemplo: "Quiero algo que me haga pensar sobre la sociedad y las diferencias entre las personas",
+        sinopsis: "Una familia de bajos recursos comienza a introducirse en la vida de una familia rica, generando una serie de situaciones que exponen las desigualdades sociales.",
+        porQueVerla: "Porque combina humor, drama y suspenso para mostrar cómo las diferencias sociales pueden afectar las relaciones y decisiones de las personas.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "sociedad-poetas-muertos",
+        categoria: "Reflexión",
+        titulo: "La sociedad de los poetas muertos",
+        anio: "1989",
+        pais: "Estados Unidos",
+        director: "Peter Weir",
+        emocion: "Libertad / Inspiración",
+        tono: "Emotivo, reflexivo e inspirador",
+        ritmo: "Moderado",
+        intensidad: "Alta",
+        idealPara: "Querés replantearte la vida, tus sueños y las decisiones que tomás",
+        fraseEjemplo: "Quiero algo que me haga pensar si estoy viviendo la vida que realmente quiero",
+        sinopsis: "Un profesor de literatura inspira a sus alumnos a pensar por sí mismos, cuestionar las normas y aprovechar la vida.",
+        porQueVerla: "Porque invita a reflexionar sobre la libertad, la educación, la presión social y la importancia de perseguir lo que uno realmente quiere.",
+        dondeVerla: "Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BOGYwYWNjMzgtNGU4ZC00NWQ2LWEwZjUtMzE1Zjc3NjY3YTU1XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "el-arbol-de-la-vida",
+        categoria: "Reflexión",
+        titulo: "El árbol de la vida",
+        anio: "2011",
+        pais: "Estados Unidos",
+        director: "Terrence Malick",
+        emocion: "Existencia / Contemplación",
+        tono: "Poético, espiritual y profundo",
+        ritmo: "Lento",
+        intensidad: "Muy alta",
+        idealPara: "Querés una película profunda que te haga reflexionar sobre la vida, la familia y la existencia",
+        fraseEjemplo: "Quiero algo profundo que me haga pensar sobre la vida y lo que significa estar acá",
+        sinopsis: "La historia sigue a una familia de Texas y, a través de los recuerdos del hijo mayor, propone una mirada reflexiva sobre la infancia, la familia, la pérdida y la existencia humana.",
+        porQueVerla: "Porque es una película muy contemplativa que plantea preguntas grandes sobre la muerte, la naturaleza, la familia y el sentido de existir.",
+        dondeVerla: "Rakuten TV / Apple TV",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTMwNjQ0NjMzN15BMl5BanBnXkFtZTcwNjMxMTkyNA@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "ikiru",
+        categoria: "Reflexión",
+        titulo: "Ikiru (Vivir)",
+        anio: "1952",
+        pais: "Japón",
+        director: "Akira Kurosawa",
+        emocion: "Existencia / Propósito",
+        tono: "Humano, conmovedor y sereno",
+        ritmo: "Lento",
+        intensidad: "Alta",
+        idealPara: "Querés pensar en qué hacés con tu tiempo",
+        fraseEjemplo: "Quiero algo que me haga pensar en el sentido de lo que hago",
+        sinopsis: "Un burócrata de Tokio descubre que tiene una enfermedad terminal y busca darle sentido a lo que le queda de vida.",
+        porQueVerla: "Es un clásico que sigue interpelando sobre cómo elegimos vivir nuestros días.",
+        dondeVerla: "Prime Video / Apple TV / Google Play Películas",
+        imagen: "https://m.media-amazon.com/images/M/MV5BZTdkN2E5OTYtN2FiMi00YWUwLWEzMGMtZTMzNjY0NjgzYzFiXkEyXkFqcGdeQXVyMTI3ODAyMzE2._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "truman-show",
+        categoria: "Reflexión",
+        titulo: "El show de Truman (The Truman Show)",
+        anio: "1998",
+        pais: "Estados Unidos",
+        director: "Peter Weir",
+        emocion: "Libertad / Reflexión",
+        tono: "Ingenioso, inquietante y emotivo",
+        ritmo: "Moderado",
+        intensidad: "Media / Alta",
+        idealPara: "Querés pensar sobre la libertad, los medios y lo que es real",
+        fraseEjemplo: "Quiero algo que me haga cuestionar qué es real",
+        sinopsis: "Truman lleva una vida aparentemente perfecta hasta que empieza a sospechar que toda su vida es un reality show.",
+        porQueVerla: "Sigue más vigente que nunca para pensar en la autenticidad y el control de nuestra propia historia.",
+        dondeVerla: "Mercado Play / Google Play Películas",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMDIzODcyY2EtMmY2MC00ZWVlLTgwMzAtMjQwOWUyNmJjNTYyXkEyXkFqcGdeQXVyNDk3NzU2MTQ@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "lost-in-translation",
+        categoria: "Reflexión",
+        titulo: "Perdidos en Tokio (Lost in Translation)",
+        anio: "2003",
+        pais: "Estados Unidos / Japón",
+        director: "Sofia Coppola",
+        emocion: "Soledad / Conexión",
+        tono: "Melancólico e íntimo",
+        ritmo: "Lento",
+        intensidad: "Media / Alta",
+        idealPara: "Querés una historia tranquila sobre la soledad y la conexión inesperada",
+        fraseEjemplo: "Quiero algo tranquilo sobre dos personas que se encuentran",
+        sinopsis: "Un actor en decadencia y una joven recién casada se conocen en un hotel de Tokio y forman un vínculo inesperado.",
+        porQueVerla: "Retrata con delicadeza la sensación de estar perdido y encontrar compañía en un lugar ajeno.",
+        dondeVerla: "Netflix / Amazon Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BTDk2YjQ2M2YtM2U0Yy00NTkxLWEzY2YtN2U5ZmI0Y2UzY2I0XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "whisky",
+        categoria: "Reflexión",
+        titulo: "Whisky",
+        anio: "2004",
+        pais: "Uruguay / Argentina / Alemania / España",
+        director: "Juan Pablo Rebella y Pablo Stoll",
+        emocion: "Soledad / Rutina",
+        tono: "Seco, melancólico y de humor sutil",
+        ritmo: "Lento",
+        intensidad: "Media",
+        idealPara: "Querés una película uruguaya sobre lo que se calla y lo cotidiano",
+        fraseEjemplo: "Quiero algo uruguayo, tranquilo, que me deje pensando",
+        sinopsis: "Jacobo, dueño de una fábrica de medias en Montevideo, le pide a su empleada Marta que finja ser su esposa cuando lo visita su hermano.",
+        porQueVerla: "Es un retrato muy uruguayo sobre el afecto y la rutina, con humor seco y pocos diálogos.",
+        dondeVerla: "Antel TV",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTIxNzA1NDg0M15BMl5BanBnXkFtZTcwMzkyOTgyMQ@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "ex-machina",
+        categoria: "Reflexión",
+        titulo: "Ex Machina",
+        anio: "2014",
+        pais: "Reino Unido",
+        director: "Alex Garland",
+        emocion: "Reflexión / Inquietud",
+        tono: "Oscuro, tenso y cerebral",
+        ritmo: "Lento",
+        intensidad: "Alta",
+        idealPara: "Querés una ciencia ficción para pensar sobre la inteligencia artificial",
+        fraseEjemplo: "Quiero algo que me haga pensar sobre la inteligencia artificial",
+        sinopsis: "Un joven programador es elegido para evaluar a una humanoide con inteligencia artificial en la casa aislada de su creador.",
+        porQueVerla: "Plantea preguntas sobre la conciencia, la manipulación y los límites de la tecnología.",
+        dondeVerla: "HBO Max",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTUxNzc0OTIxMV5BMl5BanBnXkFtZTgwNDI3NzU2NDE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "arrival",
+        categoria: "Reflexión",
+        titulo: "La llegada (Arrival)",
+        anio: "2016",
+        pais: "Estados Unidos / Canadá",
+        director: "Denis Villeneuve",
+        emocion: "Reflexión / Asombro",
+        tono: "Contemplativo, emotivo y enigmático",
+        ritmo: "Lento",
+        intensidad: "Alta",
+        idealPara: "Querés una ciencia ficción para pensar sobre el tiempo, el lenguaje y la pérdida",
+        fraseEjemplo: "Quiero algo de ciencia ficción que me deje pensando",
+        sinopsis: "Una lingüista es convocada para comunicarse con unos seres extraterrestres que llegaron a la Tierra en naves misteriosas.",
+        porQueVerla: "Es ciencia ficción más emocional que espectacular, que hace pensar sobre cómo comunicamos y cómo vivimos el tiempo.",
+        dondeVerla: "HBO Max",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTExMzU0ODcxNDheQTJeQWpwZ15BbWU4MDE1OTI4MzAy._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "moonlight",
+        categoria: "Reflexión",
+        titulo: "Moonlight",
+        anio: "2016",
+        pais: "Estados Unidos",
+        director: "Barry Jenkins",
+        emocion: "Identidad / Reflexión",
+        tono: "Íntimo, poético y sensible",
+        ritmo: "Lento",
+        intensidad: "Muy alta",
+        idealPara: "Querés una película profunda sobre quién sos y cómo te ven",
+        fraseEjemplo: "Quiero algo profundo sobre la identidad",
+        sinopsis: "Sigue tres etapas de la vida de Chiron, un joven afroamericano de Miami, mientras descubre quién es.",
+        porQueVerla: "Es una película poética y sensible sobre la identidad, el deseo y la vulnerabilidad.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BNzQxNTIyODAxMV5BMl5BanBnXkFtZTgwNzQyMDA3OTE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "nomadland",
+        categoria: "Reflexión",
+        titulo: "Nomadland",
+        anio: "2020",
+        pais: "Estados Unidos",
+        director: "Chloé Zhao",
+        emocion: "Soledad / Libertad",
+        tono: "Contemplativo y melancólico",
+        ritmo: "Lento",
+        intensidad: "Alta",
+        idealPara: "Querés una película serena sobre la pérdida y la libertad",
+        fraseEjemplo: "Quiero algo tranquilo que me haga pensar en cómo vivimos",
+        sinopsis: "Fern, tras perder su empleo y su pueblo, recorre el oeste de Estados Unidos en una camioneta y conoce a otros nómadas.",
+        porQueVerla: "Es una mirada humana y paisajística sobre la soledad y el significado del hogar.",
+        dondeVerla: "Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMDRiZWUxNmItNDU5Yy00ODNmLTk0M2ItZjQzZTA5OTJkZjkyXkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "perfect-days",
+        categoria: "Reflexión",
+        titulo: "Perfect Days",
+        anio: "2023",
+        pais: "Japón / Alemania",
+        director: "Wim Wenders",
+        emocion: "Calma / Contemplación",
+        tono: "Sereno y contemplativo",
+        ritmo: "Lento",
+        intensidad: "Media",
+        idealPara: "Querés bajar el ritmo y pensar en las cosas simples",
+        fraseEjemplo: "Quiero algo tranquilo que me haga valorar lo cotidiano",
+        sinopsis: "Hirayama, que limpia baños públicos en Tokio, disfruta de su rutina simple hasta que unos encuentros la alteran.",
+        porQueVerla: "Muestra la belleza de lo cotidiano, con poco diálogo y mucha atmósfera.",
+        dondeVerla: "Netflix / MUBI",
+        imagen: "https://m.media-amazon.com/images/M/MV5BNGFkYjU0M2YtZjJlNC00M2E1LTg5YzYtOGEzYTU2ZWE5YjI4XkEyXkFqcGdeQXVyMTUzMTg2ODkz._V1_FMjpg_UX1000_.jpg"
+      },
+
+      // --- SUSTO / MIEDO / TERROR ---
+      {
+        id: "undertone",
+        categoria: "Susto/Miedo/Terror",
+        titulo: "Undertone",
+        anio: "2026",
+        pais: "Canadá",
+        director: "Ian Tuason",
+        emocion: "Miedo / Terror",
+        tono: "Oscuro",
+        ritmo: "Lento",
+        intensidad: "Alta",
+        idealPara: "Querés un miedo lento y psicológico, que se mete por el sonido",
+        fraseEjemplo: "Quiero algo que me dé miedo de verdad, sin tanto susto fácil",
+        sinopsis: "La conductora de un podcast sobre lo paranormal, que cuida a su madre moribunda, empieza a recibir grabaciones de audio perturbadoras que parecen vincularse con lo que ocurre en su casa.",
+        porQueVerla: "Construye el terror desde la atmósfera y el sonido más que con sustos.",
+        dondeVerla: "HBO Max",
+        imagen: "https://m.media-amazon.com/images/M/MV5BYzE1OTVkOTktMjJmNC00ZTlhLWI4NTUtZjA4NDM4YjFlN2FjXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "blair-witch",
+        categoria: "Susto/Miedo/Terror",
+        titulo: "El proyecto de Blair Witch",
+        anio: "1999",
+        pais: "Estados Unidos",
+        director: "Daniel Myrick y Eduardo Sánchez",
+        emocion: "Miedo / Terror",
+        tono: "Oscuro",
+        ritmo: "Lento",
+        intensidad: "Alta",
+        idealPara: "Querés el clásico del found footage, donde todo se siente real",
+        fraseEjemplo: "Quiero algo que parezca real, tipo grabación casera",
+        sinopsis: "Tres estudiantes se internan en un bosque de Maryland para filmar un documental sobre una leyenda local y desaparecen. Lo que se ve es el material que dejaron grabado.",
+        porQueVerla: "Es el clásico que popularizó el formato de metraje encontrado y genera miedo con lo que no se ve.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BNzQ1NDBlNDItMDAyYS00YTI2LTgwMmUtYTkxYTRhZGYxOWU3XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "rec",
+        categoria: "Susto/Miedo/Terror",
+        titulo: "[REC]",
+        anio: "2007",
+        pais: "España",
+        director: "Jaume Balagueró y Paco Plaza",
+        emocion: "Miedo / Terror",
+        tono: "Oscuro",
+        ritmo: "Ágil",
+        intensidad: "Alta",
+        idealPara: "Querés miedo constante, sin respiro y con mucha adrenalina",
+        fraseEjemplo: "Quiero algo que me tenga en tensión todo el tiempo",
+        sinopsis: "Una reportera y su camarógrafo acompañan a unos bomberos a un edificio de Barcelona que es puesto en cuarentena de golpe, mientras un contagio se propaga entre los vecinos.",
+        porQueVerla: "Es breve, intensa y muy inmersiva; además es un referente del terror español.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BZTJmNTZlZWUtZTQ2Yi00YTFjLWFiNzctYzFlNmZmZGMzYzgwXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "veronica",
+        categoria: "Susto/Miedo/Terror",
+        titulo: "Verónica",
+        anio: "2017",
+        pais: "España",
+        director: "Paco Plaza",
+        emocion: "Miedo / Terror",
+        tono: "Oscuro",
+        ritmo: "Medio",
+        intensidad: "Media",
+        idealPara: "Querés una historia sobrenatural con atmósfera y ambientada en los 90",
+        fraseEjemplo: "Quiero algo de espíritus que dé miedo de verdad",
+        sinopsis: "En Madrid, en 1991, una adolescente juega con una tabla ouija durante un eclipse y comienza a sentirse acechada por una presencia.",
+        porQueVerla: "Combina un miedo sobrenatural muy bien construido con un vínculo familiar que la vuelve más emocional.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTg4MjI2OTYwNF5BMl5BanBnXkFtZTgwMTQ1NDY5NDM@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "gonjiam",
+        categoria: "Susto/Miedo/Terror",
+        titulo: "Gonjiam: Haunted Asylum",
+        anio: "2018",
+        pais: "Corea del Sur",
+        director: "Jung Bum-shik",
+        emocion: "Miedo / Terror",
+        tono: "Oscuro",
+        ritmo: "Medio",
+        intensidad: "Media",
+        idealPara: "Querés una historia de lugar abandonado y de exploradores que se meten donde no deben",
+        fraseEjemplo: "Quiero algo de un lugar embrujado, con sustos",
+        sinopsis: "Un grupo de streamers transmite en vivo desde un hospital psiquiátrico abandonado de Corea del Sur, y los eventos empiezan a salirse de control.",
+        porQueVerla: "Tiene buenos sustos y una puesta en escena que aprovecha el formato de transmisión en vivo.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMmYxNDg3NDgtNmJiNC00YTVlLWE1NzEtZDZmM2U2ZWRmODFiXkEyXkFqcGdeQXVyMTA4NjE0NjEy._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "autopsia-jane-doe",
+        categoria: "Susto/Miedo/Terror",
+        titulo: "La autopsia de Jane Doe",
+        anio: "2016",
+        pais: "Reino Unido / Estados Unidos",
+        director: "André Øvredal",
+        emocion: "Miedo / Terror",
+        tono: "Oscuro",
+        ritmo: "Medio",
+        intensidad: "Media",
+        idealPara: "Querés un misterio cerrado, con tensión que crece de a poco",
+        fraseEjemplo: "Quiero algo de misterio y miedo en un solo lugar",
+        sinopsis: "Un padre y su hijo, que trabajan en una morgue, reciben de noche el cuerpo sin identificar de una joven hallada en la escena de un crimen y empiezan a notar cosas inexplicables.",
+        porQueVerla: "La tensión escala de a poco, en un espacio reducido y con mucha atmósfera.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMjA2MTEzMzkzM15BMl5BanBnXkFtZTgwMjM2MTM5MDI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "creep",
+        categoria: "Susto/Miedo/Terror",
+        titulo: "Creep",
+        anio: "2014",
+        pais: "Estados Unidos",
+        director: "Patrick Brice",
+        emocion: "Miedo / Terror",
+        tono: "Oscuro",
+        ritmo: "Medio",
+        intensidad: "Media",
+        idealPara: "Querés un miedo psicológico e incómodo, más que sobrenatural",
+        fraseEjemplo: "Quiero algo perturbador pero no de fantasmas",
+        sinopsis: "Un camarógrafo freelance acepta grabar un video sobre el último día de vida de un hombre en una cabaña aislada, pero el comportamiento de él resulta cada vez más extraño.",
+        porQueVerla: "Genera una incomodidad constante, con un protagonista muy perturbador.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTY0NTU2NjE4Ml5BMl5BanBnXkFtZTgwODk3NzU5NTE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "psicosis",
+        categoria: "Susto/Miedo/Terror",
+        titulo: "Psicosis (Psycho)",
+        anio: "1960",
+        pais: "Estados Unidos",
+        director: "Alfred Hitchcock",
+        emocion: "Miedo / Suspenso",
+        tono: "Oscuro y tenso",
+        ritmo: "Medio",
+        intensidad: "Alta",
+        idealPara: "Querés un clásico del suspenso que cambió el género",
+        fraseEjemplo: "Quiero un clásico de terror psicológico",
+        sinopsis: "Una mujer huye con dinero robado y se hospeda en un motel apartado, administrado por un joven muy peculiar.",
+        porQueVerla: "Es un referente del suspenso y tiene escenas que marcaron la historia del cine.",
+        dondeVerla: "HBO Max",
+        imagen: "https://m.media-amazon.com/images/M/MV5BNTQwNDM1YzItNDAxZC00NWY2LTk0M2UtNDIwNWI5OGUyNWUxXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "ringu",
+        categoria: "Susto/Miedo/Terror",
+        titulo: "Ringu (El aro)",
+        anio: "1998",
+        pais: "Japón",
+        director: "Hideo Nakata",
+        emocion: "Miedo / Terror",
+        tono: "Oscuro e inquietante",
+        ritmo: "Lento",
+        intensidad: "Alta",
+        idealPara: "Querés un terror japonés que genere miedo con muy poco",
+        fraseEjemplo: "Quiero un terror japonés con una maldición",
+        sinopsis: "Una periodista investiga un videocasete misterioso que, según se dice, mata a quien lo ve siete días después.",
+        porQueVerla: "Dio inicio a la ola del terror japonés y se apoya en la atmósfera más que en los golpes de efecto.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BYTliNWVhMmEtYmNiZS00NDM3LWJjNTUtYzYxYjk3ZTU0YTMwXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "dejame-entrar",
+        categoria: "Susto/Miedo/Terror",
+        titulo: "Déjame entrar (Låt den rätte komma in)",
+        anio: "2008",
+        pais: "Suecia",
+        director: "Tomas Alfredson",
+        emocion: "Miedo / Terror",
+        tono: "Oscuro, frío y melancólico",
+        ritmo: "Lento",
+        intensidad: "Alta",
+        idealPara: "Querés un terror diferente, con mucha emoción y poca prisa",
+        fraseEjemplo: "Quiero algo de miedo pero con una historia emotiva",
+        sinopsis: "Oskar, un chico de doce años que sufre acoso en la escuela, se hace amigo de Eli, la nueva vecina, que esconde un secreto.",
+        porQueVerla: "Mezcla terror con una historia de amistad e infancia, con un ritmo frío y muy atmosférico.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BOWM4NTY2NTMtZDZlZi00OTI0LWE4MDMtYjFlNmZmMjY3MjE0XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "babadook",
+        categoria: "Susto/Miedo/Terror",
+        titulo: "El Babadook (The Babadook)",
+        anio: "2014",
+        pais: "Australia",
+        director: "Jennifer Kent",
+        emocion: "Miedo / Terror",
+        tono: "Oscuro y psicológico",
+        ritmo: "Lento",
+        intensidad: "Alta",
+        idealPara: "Querés un terror psicológico con carga emocional",
+        fraseEjemplo: "Quiero algo que dé miedo pero que tenga profundidad",
+        sinopsis: "Una viuda y su hijo reciben un inquietante libro infantil y empiezan a sentirse acechados por una presencia.",
+        porQueVerla: "Es una película de terror que habla del duelo y la maternidad con enorme fuerza simbólica.",
+        dondeVerla: "Google Play Películas / YouTube",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTk0NzMzODc2NF5BMl5BanBnXkFtZTgwOTYzNTM1MzE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "aterrados",
+        categoria: "Susto/Miedo/Terror",
+        titulo: "Aterrados",
+        anio: "2017",
+        pais: "Argentina",
+        director: "Demián Rugna",
+        emocion: "Miedo / Terror",
+        tono: "Oscuro e intenso",
+        ritmo: "Ágil",
+        intensidad: "Muy alta",
+        idealPara: "Querés un terror latinoamericano muy intenso",
+        fraseEjemplo: "Quiero algo de miedo bien latino y bien intenso",
+        sinopsis: "En un barrio de Buenos Aires ocurren sucesos paranormales cada vez más violentos, y un grupo de investigadores intenta entender qué pasa.",
+        porQueVerla: "Es uno de los mejores terrores del cine argentino, con sustos muy efectivos.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMjQ3NzI3NzY2N15BMl5BanBnXkFtZTgwNTc4MjU3NjM@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "get-out",
+        categoria: "Susto/Miedo/Terror",
+        titulo: "¡Huye! (Get Out)",
+        anio: "2017",
+        pais: "Estados Unidos",
+        director: "Jordan Peele",
+        emocion: "Miedo / Inquietud",
+        tono: "Oscuro y satírico",
+        ritmo: "Medio",
+        intensidad: "Alta",
+        idealPara: "Querés terror con crítica social y giros",
+        fraseEjemplo: "Quiero algo de miedo que también me haga pensar",
+        sinopsis: "Chris viaja a conocer a la familia de su novia y empieza a notar comportamientos cada vez más extraños.",
+        porQueVerla: "Combina terror, humor negro y crítica social con una tensión creciente magistral.",
+        dondeVerla: "Prime Video / Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMjUxMDQwNjcyNl5BMl5BanBnXkFtZTgwNzcwMzc0MTI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "el-conjuro",
+        categoria: "Susto/Miedo/Terror",
+        titulo: "El conjuro",
+        anio: "2013",
+        pais: "Estados Unidos",
+        director: "James Wan",
+        emocion: "Miedo",
+        tono: "Paranormal",
+        ritmo: "Progresivo",
+        intensidad: "Alta",
+        idealPara: "Querés pasar miedo de verdad",
+        fraseEjemplo: "Quiero algo que me haga saltar del sillón",
+        sinopsis: "Una familia busca ayuda por una presencia sobrenatural en su casa.",
+        porQueVerla: "Tiene grandes sustos y una historia sólida de investigación paranormal.",
+        dondeVerla: "HBO Max",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTM3NjA1NDMyMV5BMl5BanBnXkFtZTcwMDQzNDMzOQ@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "cuando-acecha-la-maldad",
+        categoria: "Susto/Miedo/Terror",
+        titulo: "Cuando acecha la maldad",
+        anio: "2023",
+        pais: "Argentina",
+        director: "Demián Rugna",
+        emocion: "Terror y desesperación",
+        tono: "Crudo y oscuro",
+        ritmo: "Intenso",
+        intensidad: "Muy alta",
+        idealPara: "Querés una película fuerte y perturbadora",
+        fraseEjemplo: "Quiero pasar miedo y no saber qué va a pasar",
+        sinopsis: "Dos hermanos descubren que una presencia demoníaca amenaza a su comunidad rural.",
+        porQueVerla: "Es un terror argentino muy impactante, con escenas impredecibles.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BYzE3M2MwYTgtZWRkMy00Y2UyLWJjMDctYTQ2NDQ1NTM1Y2Q5XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "hablame",
+        categoria: "Susto/Miedo/Terror",
+        titulo: "Háblame (Talk to Me)",
+        anio: "2022",
+        pais: "Australia",
+        director: "Danny y Michael Philippou",
+        emocion: "Angustia / Miedo",
+        tono: "Oscuro y perturbador",
+        ritmo: "Rápido",
+        intensidad: "Muy alta",
+        idealPara: "Querés algo sobrenatural y diferente",
+        fraseEjemplo: "Quiero algo que me deje pensando después de verla",
+        sinopsis: "Un grupo de adolescentes descubre una mano embalsamada que permite comunicarse con espíritus.",
+        porQueVerla: "Combina terror moderno con temas como el duelo y el aislamiento.",
+        dondeVerla: "Prime Video / HBO Max",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMmY5ZGEzZmMtZWI3YS00NmI2LTk0OTItYjM1ZDJhM2ZkNDYyXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg"
+      },
+
+      // --- SUSPENSO / INTRIGA ---
+      {
+        id: "nowhere",
+        categoria: "Suspenso/Intriga",
+        titulo: "Nowhere",
+        anio: "2023",
+        pais: "España",
+        director: "Albert Pintó",
+        emocion: "Intriga / Suspenso",
+        tono: "Oscuro y angustiante",
+        ritmo: "Medio",
+        intensidad: "Alta",
+        idealPara: "Querés un thriller de supervivencia, con tensión constante y en un solo espacio",
+        fraseEjemplo: "Quiero algo que me tenga en tensión, de supervivencia",
+        sinopsis: "Una mujer embarazada que huye de un régimen opresivo en un contenedor marítimo queda a la deriva en el mar tras una tormenta y debe sobrevivir.",
+        porQueVerla: "Genera mucha tensión con un solo escenario y un personaje.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BY2M2ZGUxYmYtYjBkNi00ZjhiLThkZGEtZWM1NzM2MjA5MWQyXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "triangulo",
+        categoria: "Suspenso/Intriga",
+        titulo: "Triángulo (Triangle)",
+        anio: "2009",
+        pais: "Reino Unido / Australia",
+        director: "Christopher Smith",
+        emocion: "Intriga / Suspenso",
+        tono: "Oscuro y enigmático",
+        ritmo: "Medio",
+        intensidad: "Alta",
+        idealPara: "Querés un enigma que te haga pensar y que no se entiende del todo hasta el final",
+        fraseEjemplo: "Quiero algo con un misterio retorcido que me rompa la cabeza",
+        sinopsis: "Una joven sale a navegar con unos amigos y, tras una tormenta, queda atrapada en un enigma que parece no tener salida.",
+        porQueVerla: "Es un rompecabezas de suspenso que conviene ver sin conocer el giro.",
+        dondeVerla: "Prime Video / YouTube",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTM5MzI1NTk5Nl5BMl5BanBnXkFtZTcwMDg4OTc1Mg@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "midsommar",
+        categoria: "Suspenso/Intriga",
+        titulo: "Midsommar",
+        anio: "2019",
+        pais: "Estados Unidos / Suecia",
+        director: "Ari Aster",
+        emocion: "Intriga / Inquietud",
+        tono: "Perturbador y luminoso",
+        ritmo: "Lento",
+        intensidad: "Alta",
+        idealPara: "Querés una película inquietante, de ritmo lento, que se queda en la cabeza",
+        fraseEjemplo: "Quiero algo perturbador y diferente",
+        sinopsis: "Una joven en duelo acompaña a su novio y a sus amigos a un festival de verano en una comunidad aislada de Suecia, donde las tradiciones se vuelven cada vez más inquietantes.",
+        porQueVerla: "Tiene un estilo visual muy distinto al del terror clásico, con mucha luz y atmósfera inquietante.",
+        dondeVerla: "Netflix / Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMzQxNzQzOTQwM15BMl5BanBnXkFtZTgwMDQ2NTcwODM@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "missing",
+        categoria: "Suspenso/Intriga",
+        titulo: "Missing",
+        anio: "2023",
+        pais: "Estados Unidos",
+        director: "Will Merrick y Nick Johnson",
+        emocion: "Intriga / Suspenso",
+        tono: "Neutro y ágil",
+        ritmo: "Ágil",
+        intensidad: "Media",
+        idealPara: "Querés un thriller moderno, ágil, contado desde pantallas",
+        fraseEjemplo: "Quiero un thriller de investigación con muchos giros",
+        sinopsis: "Una adolescente intenta encontrar a su madre, desaparecida durante un viaje a Colombia, investigando solo a través de pantallas y herramientas digitales.",
+        porQueVerla: "Tiene un ritmo ágil, giros constantes y un formato original.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMzgzYmM0YzEtYTk5My00Y2JmLTg1OTctYzQ1NDkzZGU0NWJlXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "contratiempo",
+        categoria: "Suspenso/Intriga",
+        titulo: "Contratiempo (The Invisible Guest)",
+        anio: "2016",
+        pais: "España",
+        director: "Oriol Paulo",
+        emocion: "Intriga / Suspenso",
+        tono: "Tenso y cerebral",
+        ritmo: "Medio",
+        intensidad: "Media",
+        idealPara: "Querés un misterio con giros que te hagan dudar de todo",
+        fraseEjemplo: "Quiero algo de misterio, con un final que no me espere",
+        sinopsis: "Un empresario acusado de asesinato debe convencer a su abogada de su inocencia en tres horas, mientras ella reconstruye lo ocurrido.",
+        porQueVerla: "Es un thriller español con giros muy bien armados.",
+        dondeVerla: "Apple TV / Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMDk0YzAwYjktMWFiZi00Y2FmLWJmMmMtMzUyZDZmMmU5MjkzXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "coherence",
+        categoria: "Suspenso/Intriga",
+        titulo: "Coherence",
+        anio: "2013",
+        pais: "Estados Unidos",
+        director: "James Ward Byrkit",
+        emocion: "Intriga / Suspenso",
+        tono: "Enigmático",
+        ritmo: "Medio",
+        intensidad: "Media",
+        idealPara: "Querés un misterio de ciencia ficción para pensar y debatir después",
+        fraseEjemplo: "Quiero algo que me haga pensar y después comentarlo con alguien",
+        sinopsis: "Durante el paso de un cometa, un grupo de amigos que cena en una casa vive sucesos cada vez más extraños que los llevan a dudar de la realidad.",
+        porQueVerla: "Genera mucha tensión con pocos recursos, casi toda en una sola casa, y deja mucho para discutir.",
+        dondeVerla: "YouTube / Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BNzQ3ODUzNDY2MTNbMl5BanBnXkFtZTgwNzg0ODY2MTE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "los-otros",
+        categoria: "Suspenso/Intriga",
+        titulo: "Los otros (The Others)",
+        anio: "2001",
+        pais: "España / Estados Unidos",
+        director: "Alejandro Amenábar",
+        emocion: "Intriga y temor",
+        tono: "Gótico, misterioso y atmosférico",
+        ritmo: "Lento y progresivo",
+        intensidad: "Alta",
+        idealPara: "Querés suspenso psicológico con una atmósfera inquietante",
+        fraseEjemplo: "Quiero una película misteriosa que me sorprenda al final",
+        sinopsis: "Una mujer vive con sus dos hijos en una antigua casa. A medida que suceden acontecimientos inexplicables, comienza a sospechar que no están solos.",
+        porQueVerla: "Es un clásico del misterio, con una ambientación excelente y un desenlace memorable.",
+        dondeVerla: "YouTube / Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTAxMDE4Mzc3ODNeQTJeQWpwZ15BbWU4MDY2Mjg4MDcx._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "the-call",
+        categoria: "Suspenso/Intriga",
+        titulo: "El teléfono (The Call)",
+        anio: "2020",
+        pais: "Corea del Sur",
+        director: "Lee Chung-hyun",
+        emocion: "Ansiedad y tensión",
+        tono: "Oscuro, psicológico y vertiginoso",
+        ritmo: "Ágil, con giros constantes",
+        intensidad: "Muy alta",
+        idealPara: "Querés una historia impredecible que te mantenga atrapada",
+        fraseEjemplo: "Quiero un thriller lleno de sorpresas y tensión",
+        sinopsis: "Dos mujeres que viven en la misma casa, pero en diferentes épocas, comienzan a comunicarse mediante llamadas telefónicas. Sus decisiones alteran el destino de ambas.",
+        porQueVerla: "Tiene una premisa original y una escalada de tensión muy efectiva.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BY2Q2YzU0NzYtZDMxNS00Y2YyLWJkOGQtOGIxZDczNzIzZWZhXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "forgotten",
+        categoria: "Suspenso/Intriga",
+        titulo: "Olvidado (Forgotten)",
+        anio: "2017",
+        pais: "Corea del Sur",
+        director: "Jang Hang-jun",
+        emocion: "Confusión y desconfianza",
+        tono: "Misterioso, oscuro y psicológico",
+        ritmo: "Progresivo, con grandes giros",
+        intensidad: "Muy alta",
+        idealPara: "Querés descubrir la verdad detrás de una historia llena de secretos",
+        fraseEjemplo: "Quiero una película que me sorprenda cuando crea que ya entendí todo",
+        sinopsis: "Un joven presencia el secuestro de su hermano. Cuando este regresa después de varios días, parece ser una persona completamente diferente.",
+        porQueVerla: "Es un thriller lleno de revelaciones que cambia constantemente la perspectiva del espectador.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BNjM3Y2M3ZDAtNTBhZS00YzA5LThjY2YtMTczYTJlZWI3YjI5XkEyXkFqcGdeQXVyNjU1OTg4OTM@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "gone-girl",
+        categoria: "Suspenso/Intriga",
+        titulo: "Perdida (Gone Girl)",
+        anio: "2014",
+        pais: "Estados Unidos",
+        director: "David Fincher",
+        emocion: "Desconfianza y desconcierto",
+        tono: "Frío, oscuro y psicológico",
+        ritmo: "Progresivo, con giros",
+        intensidad: "Alta",
+        idealPara: "Querés una historia llena de secretos y sospechas",
+        fraseEjemplo: "Quiero una película que me haga desconfiar de todos",
+        sinopsis: "Una mujer desaparece el día de su aniversario de bodas y su esposo se convierte en el principal sospechoso.",
+        porQueVerla: "Juega constantemente con la percepción del espectador y presenta giros sorprendentes.",
+        dondeVerla: "Prime Video / Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTk0MDQ3MzAzOV5BMl5BanBnXkFtZTgwNzU1NzE3MjE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "invisible-man",
+        categoria: "Suspenso/Intriga",
+        titulo: "El hombre invisible (The Invisible Man)",
+        anio: "2020",
+        pais: "Australia / Estados Unidos",
+        director: "Leigh Whannell",
+        emocion: "Miedo y paranoia",
+        tono: "Tenso, oscuro y psicológico",
+        ritmo: "Ágil, con momentos de tensión",
+        intensidad: "Muy alta",
+        idealPara: "Querés sentir tensión constante y no saber qué puede pasar",
+        fraseEjemplo: "Quiero una película que me mantenga alerta todo el tiempo",
+        sinopsis: "Una mujer escapa de una relación abusiva y cree que su expareja continúa acechándola, aunque todos aseguran que está muerto.",
+        porQueVerla: "Trabaja muy bien el suspenso a través de lo que no se ve y de la incertidumbre.",
+        dondeVerla: "YouTube / Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BZjFhM2I4ZDYtZWMwNC00NTYzLWE3MDgtNjgxYmM3ZWMxYmVmXkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "prisoners",
+        categoria: "Suspenso/Intriga",
+        titulo: "Prisioneros (Prisoners)",
+        anio: "2013",
+        pais: "Estados Unidos",
+        director: "Denis Villeneuve",
+        emocion: "Angustia y desesperación",
+        tono: "Oscuro y dramático",
+        ritmo: "Lento, progresivo",
+        intensidad: "Muy alta",
+        idealPara: "Querés un misterio que te mantenga pensando durante toda la película",
+        fraseEjemplo: "Quiero una historia intensa donde cada minuto importe",
+        sinopsis: "Dos niñas desaparecen y sus familias comienzan una desesperada búsqueda. Ante la falta de respuestas, uno de los padres decide tomar la justicia por su cuenta.",
+        porQueVerla: "Tiene una trama compleja, personajes ambiguos y una tensión que crece constantemente.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTg0NTIzMjQ1NV5BMl5BanBnXkFtZTcwNDc3MzM5OQ@@._V1_FMjpg_UX1000_.jpg"
+      },
+
+      // --- DESCONEXIÓN ---
+      {
+        id: "seven",
+        categoria: "Desconexión",
+        titulo: "Seven (Se7en)",
+        anio: "1995",
+        pais: "Estados Unidos",
+        director: "David Fincher",
+        emocion: "Suspenso / Absorción total",
+        tono: "Oscuro, perturbador y tenso",
+        ritmo: "Lento / Dinámico",
+        intensidad: "Muy alta",
+        idealPara: "Querés una película intensa que te mantenga atrapado y desconectado de todo",
+        fraseEjemplo: "Quiero algo oscuro que me tenga pensando hasta el final",
+        sinopsis: "Dos detectives investigan una serie de asesinatos relacionados con los siete pecados capitales.",
+        porQueVerla: "Porque tiene una historia atrapante, oscura y un final muy impactante.",
+        dondeVerla: "HBO Max",
+        imagen: "https://m.media-amazon.com/images/M/MV5BOTUwODM5MTctZjczMi00OTk4LTg3NWUtNmVhMTAzNTNjYjcyXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "juno",
+        categoria: "Desconexión",
+        titulo: "Juno",
+        anio: "2007",
+        pais: "Estados Unidos",
+        director: "Jason Reitman",
+        emocion: "Calidez / Esperanza",
+        tono: "Cálido, divertido y emotivo",
+        ritmo: "Moderado",
+        intensidad: "Media / Alta",
+        idealPara: "Querés algo emotivo pero también divertido",
+        fraseEjemplo: "Quiero algo lindo, divertido y que me haga pensar",
+        sinopsis: "Juno, una adolescente que queda embarazada, enfrenta las decisiones que vienen con su embarazo.",
+        porQueVerla: "Porque combina humor y emociones reales, mostrando el crecimiento personal de sus personajes.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTIwMDgwODc5Nl5BMl5BanBnXkFtZTYwMjQzMDM4._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "notting-hill",
+        categoria: "Desconexión",
+        titulo: "Notting Hill",
+        anio: "1999",
+        pais: "Reino Unido / Estados Unidos",
+        director: "Roger Michell",
+        emocion: "Romance / Calidez",
+        tono: "Romántico, cálido y divertido",
+        ritmo: "Moderado",
+        intensidad: "Media",
+        idealPara: "Querés una historia de amor liviana y entretenida",
+        fraseEjemplo: "Quiero algo romántico y lindo para pasar el rato",
+        sinopsis: "Un dueño de una librería en Londres se enamora de una famosa actriz de Hollywood que entra inesperadamente en su vida.",
+        porQueVerla: "Porque combina romance, humor y personajes muy queribles.",
+        dondeVerla: "YouTube / Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTE5OTkwYzYtNDhlNC00MzljLTk1YTktY2IxZjliZmNjMjUzL2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "the-intern",
+        categoria: "Desconexión",
+        titulo: "El pasante de moda (The Intern)",
+        anio: "2015",
+        pais: "Estados Unidos",
+        director: "Nancy Meyers",
+        emocion: "Bienestar",
+        tono: "Cálido y amable",
+        ritmo: "Medio",
+        intensidad: "Baja",
+        idealPara: "Querés ver algo tranquilo, agradable y que te haga sentir bien",
+        fraseEjemplo: "Quiero una película linda que me haga sentir bien",
+        sinopsis: "Un hombre jubilado comienza a trabajar como pasante en una empresa de moda dirigida por una joven emprendedora.",
+        porQueVerla: "Tiene humor, personajes entrañables y una atmósfera súper reconfortante.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTUyNjE5NjI5OF5BMl5BanBnXkFtZTgwNzYzMzU3NjE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "luca",
+        categoria: "Desconexión",
+        titulo: "Luca",
+        anio: "2021",
+        pais: "Estados Unidos",
+        director: "Enrico Casarosa",
+        emocion: "Nostalgia y alegría",
+        tono: "Luminoso y veraniego",
+        ritmo: "Ágil",
+        intensidad: "Baja",
+        idealPara: "Querés sentirte de vacaciones y disfrutar",
+        fraseEjemplo: "Quiero algo colorido, divertido y que me transporte a otro lugar",
+        sinopsis: "Dos criaturas marinas se hacen pasar por humanos para vivir un verano inolvidable en un pueblo costero de Italia.",
+        porQueVerla: "Transmite amistad, libertad y la sensación de vivir un verano inolvidable.",
+        dondeVerla: "Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BZTQyNTU0MDktYTFkYi00ZjNhLWE2ODctMzBkM2U1ZTk3YTMzXkEyXkFqcGdeQXVyNTI4MzE4MDU@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "mi-vecino-totoro",
+        categoria: "Desconexión",
+        titulo: "Mi vecino Totoro",
+        anio: "1988",
+        pais: "Japón",
+        director: "Hayao Miyazaki",
+        emocion: "Calma / Ternura",
+        tono: "Mágico, cálido y reconfortante",
+        ritmo: "Tranquilo",
+        intensidad: "Media",
+        idealPara: "Querés desconectar y ver algo tranquilo y lindo",
+        fraseEjemplo: "Quiero algo tierno que me haga sentir bien",
+        sinopsis: "Dos hermanas se mudan al campo y descubren un mundo mágico habitado por espíritus del bosque, entre ellos Totoro.",
+        porQueVerla: "Porque transmite ternura, imaginación y una sensación de calma y nostalgia.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BYzJjMTYyMjQtZDI0My00ZjE2LTkyNGYtOTllNGQxNDMyZjE0XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "before-we-go",
+        categoria: "Desconexión",
+        titulo: "Antes de partir (Before We Go)",
+        anio: "2014",
+        pais: "Estados Unidos",
+        director: "Chris Evans",
+        emocion: "Conexión / Romance",
+        tono: "Íntimo, romántico y tranquilo",
+        ritmo: "Lento / Dinámico",
+        intensidad: "Media",
+        idealPara: "Querés una historia íntima sobre dos personas que se conocen inesperadamente",
+        fraseEjemplo: "Quiero algo tranquilo sobre dos personas conectando",
+        sinopsis: "Dos desconocidos pasan una noche juntos recorriendo Nueva York mientras intentan resolver sus problemas personales.",
+        porQueVerla: "Porque muestra cómo una conversación y una conexión inesperada pueden cambiar una noche.",
+        dondeVerla: "YouTube / Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTcxNzQ1NTE5Ml5BMl5BanBnXkFtZTgwMzM0NjUyNjE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "interstellar",
+        categoria: "Desconexión",
+        titulo: "Interestelar (Interstellar)",
+        anio: "2014",
+        pais: "Estados Unidos / Reino Unido",
+        director: "Christopher Nolan",
+        emocion: "Asombro / Reflexión",
+        tono: "Épico, emocional y profundo",
+        ritmo: "Dinámico",
+        intensidad: "Muy alta",
+        idealPara: "Querés algo que te haga pensar y te emocione a gran escala",
+        fraseEjemplo: "Quiero algo increíble que me haga pensar sobre la vida y el universo",
+        sinopsis: "Un grupo de astronautas viaja por el espacio buscando un nuevo hogar para la humanidad mientras un padre intenta volver con su familia.",
+        porQueVerla: "Porque combina ciencia ficción con emoción, familia y grandes preguntas sobre el tiempo y la existencia.",
+        dondeVerla: "Prime Video / HBO Max",
+        imagen: "https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "barbie",
+        categoria: "Desconexión",
+        titulo: "Barbie",
+        anio: "2023",
+        pais: "Estados Unidos",
+        director: "Greta Gerwig",
+        emocion: "Alegría / Autodescubrimiento",
+        tono: "Colorido, divertido y reflexivo",
+        ritmo: "Dinámico",
+        intensidad: "Media / Alta",
+        idealPara: "Querés divertirte pero también reflexionar sobre quién sos",
+        fraseEjemplo: "Quiero algo divertido que también me deje pensando",
+        sinopsis: "Barbie comienza a cuestionar su vida perfecta y viaja al mundo real para descubrir quién quiere ser.",
+        porQueVerla: "Porque combina humor, estética y una reflexión sobre identidad, expectativas y sociedad.",
+        dondeVerla: "HBO Max",
+        imagen: "https://m.media-amazon.com/images/M/MV5BNjU3N2QxNzYtMjk1NC00MTc4LTk1NTQtMmUxNTljM2I0NDA5XkEyXkFqcGdeQXVyODE5NzE3OTE@._V1_FMjpg_UX1000_.jpg"
+      },
+
+      // --- ROMANCE ---
+      {
+        id: "before-sunrise",
+        categoria: "Romance",
+        titulo: "Antes del amanecer (Before Sunrise)",
+        anio: "1995",
+        pais: "Estados Unidos / Austria",
+        director: "Richard Linklater",
+        emocion: "Enamoramiento / Conexión",
+        tono: "Íntimo, romántico y reflexivo",
+        ritmo: "Tranquilo",
+        intensidad: "Alta",
+        idealPara: "Querés una historia de amor profunda y realista",
+        fraseEjemplo: "Quiero algo romántico que se sienta real",
+        sinopsis: "Dos jóvenes se conocen en un tren y deciden pasar una noche juntos recorriendo Viena y conversando sobre la vida y el amor.",
+        porQueVerla: "Porque muestra cómo una conexión puede surgir a partir de una conversación y de compartir un momento especial.",
+        dondeVerla: "YouTube / Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BZDdiZTAwYzAtMDI3Ni00OTRjLTkzN2UtMGE3MDMyZmU4NTU4XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "10-cosas-que-odio-de-ti",
+        categoria: "Romance",
+        titulo: "10 cosas que odio de ti",
+        anio: "1999",
+        pais: "Estados Unidos",
+        director: "Gil Junger",
+        emocion: "Enamoramiento / Diversión",
+        tono: "Juvenil, divertido y romántico",
+        ritmo: "Dinámico",
+        intensidad: "Media",
+        idealPara: "Querés un romance adolescente liviano y divertido",
+        fraseEjemplo: "Quiero algo romántico y divertido para pasar el rato",
+        sinopsis: "Una comedia adolescente en la que dos jóvenes terminan enamorándose mientras intentan superar sus diferencias.",
+        porQueVerla: "Porque combina humor, romance y personajes carismáticos sin ser demasiado dramática.",
+        dondeVerla: "Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMmVhZjhlZDYtMDAwZi00MDcyLTgzOTItOWNiZjY0YmE0MGE0XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "when-harry-met-sally",
+        categoria: "Romance",
+        titulo: "Cuando Harry conoció a Sally",
+        anio: "1989",
+        pais: "Estados Unidos",
+        director: "Rob Reiner",
+        emocion: "Amor / Amistad",
+        tono: "Romántico, divertido y cálido",
+        ritmo: "Dinámico / Moderado",
+        intensidad: "Media",
+        idealPara: "Querés una comedia romántica divertida sobre el amor y la amistad",
+        fraseEjemplo: "Quiero algo romántico pero divertido y liviano",
+        sinopsis: "Harry y Sally se conocen por casualidad y, a lo largo de los años, construyen una amistad mientras intentan entender qué sienten realmente el uno por el otro.",
+        porQueVerla: "Porque combina humor, conversaciones divertidas y una historia de amor que se construye de manera natural.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMjE0ODEwNjM2NF5BMl5BanBnXkFtZTcwMjU2Mzg3NA@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "500-dias-con-ella",
+        categoria: "Romance",
+        titulo: "500 días con ella",
+        anio: "2009",
+        pais: "Estados Unidos",
+        director: "Marc Webb",
+        emocion: "Desamor / Nostalgia",
+        tono: "Agridulce, romántico y realista",
+        ritmo: "Dinámico",
+        intensidad: "Alta",
+        idealPara: "Estás sensible y querés una historia de amor diferente y más realista",
+        fraseEjemplo: "Quiero algo romántico, pero que también muestre el lado complicado del amor",
+        sinopsis: "Tom recuerda los 500 días de su relación con Summer e intenta comprender qué salió mal entre ellos.",
+        porQueVerla: "Porque rompe con la idea del romance perfecto y muestra cómo dos personas pueden vivir una misma relación de maneras muy diferentes.",
+        dondeVerla: "Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTk5MjM4OTU1OV5BMl5BanBnXkFtZTcwODkzNDIzMw@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "titanic",
+        categoria: "Romance",
+        titulo: "Titanic",
+        anio: "1997",
+        pais: "Estados Unidos",
+        director: "James Cameron",
+        emocion: "Amor / Tragedia",
+        tono: "Épico, romántico y dramático",
+        ritmo: "Dinámico",
+        intensidad: "Muy alta",
+        idealPara: "Querés una historia de amor intensa que te emocione y te haga llorar",
+        fraseEjemplo: "Quiero un romance intenso y trágico que me haga llorar",
+        sinopsis: "Rose, una joven de clase alta, conoce a Jack, un pasajero de tercera clase, durante el viaje inaugural del Titanic.",
+        porQueVerla: "Porque combina un romance inolvidable con una historia de supervivencia y una gran carga emocional.",
+        dondeVerla: "Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMDdmZGU3NDQtY2E5My00ZTliLWIzOTUtMTY4ZGI1YjdiNjk3XkEyXkFqcGdeQXVyNTA4NzY1MzY@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "amelie",
+        categoria: "Romance",
+        titulo: "Amélie",
+        anio: "2001",
+        pais: "Francia",
+        director: "Jean-Pierre Jeunet",
+        emocion: "Amor / Ilusión",
+        tono: "Encantador, cálido y fantástico",
+        ritmo: "Tranquilo / Moderado",
+        intensidad: "Media",
+        idealPara: "Querés algo romántico, tierno y diferente que te haga sentir bien",
+        fraseEjemplo: "Quiero algo romántico, lindo y que me levante el ánimo",
+        sinopsis: "Amélie es una joven parisina que encuentra felicidad ayudando a los demás mientras intenta acercarse a un hombre que le interesa.",
+        porQueVerla: "Porque mezcla romance, ternura, fantasía y pequeños momentos mágicos con una estética muy particular.",
+        dondeVerla: "YouTube / Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BNDg4NjM1YjMtYmNhZC00MjM0LWFiZmYtNGY1YjA3MzZmODc5XkEyXkFqcGdeQXVyNDk3NzU2MTQ@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "retrato-mujer-en-llamas",
+        categoria: "Romance",
+        titulo: "Retrato de una mujer en llamas",
+        anio: "2019",
+        pais: "Francia",
+        director: "Céline Sciamma",
+        emocion: "Deseo y nostalgia",
+        tono: "Poético, delicado y melancólico",
+        ritmo: "Lento y contemplativo",
+        intensidad: "Muy alta",
+        idealPara: "Querés una historia de amor profunda, visualmente hermosa y emotiva",
+        fraseEjemplo: "Quiero un romance intenso, delicado y diferente",
+        sinopsis: "En la Francia del siglo XVIII, una pintora recibe el encargo de realizar el retrato de una joven que está por casarse. A medida que pasan tiempo juntas, nace una conexión inesperada entre ellas.",
+        porQueVerla: "Su fotografía, sus silencios y la construcción de la relación hacen que sea una película romántica muy especial.",
+        dondeVerla: "Prime Video / MUBI",
+        imagen: "https://m.media-amazon.com/images/M/MV5BNjgwNjkwOWYtYmM3My00NzI1LTk5ZTItYWY0YjM4OTQzOGY3XkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "about-time",
+        categoria: "Romance",
+        titulo: "Cuestión de tiempo (About Time)",
+        anio: "2013",
+        pais: "Reino Unido",
+        director: "Richard Curtis",
+        emocion: "Ternura y felicidad",
+        tono: "Cálido, divertido y emotivo",
+        ritmo: "Moderado y fluido",
+        intensidad: "Alta",
+        idealPara: "Querés una película romántica que te haga reír y emocionarte",
+        fraseEjemplo: "Quiero algo lindo, romántico y que me deje con una sonrisa",
+        sinopsis: "Tim descubre que puede viajar en el tiempo y decide usar esa habilidad para mejorar su vida, especialmente para encontrar el amor.",
+        porQueVerla: "Combina romance, humor y reflexiones sobre el tiempo, la familia y los pequeños momentos de la vida.",
+        dondeVerla: "HBO Max / Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTA1ODUzMDA3NzFeQTJeQWpwZ15BbWU3MDgxMTYxNTk@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "carol",
+        categoria: "Romance",
+        titulo: "Carol",
+        anio: "2015",
+        pais: "Estados Unidos / Reino Unido",
+        director: "Todd Haynes",
+        emocion: "Anhelo y deseo",
+        tono: "Elegante, íntimo y melancólico",
+        ritmo: "Lento y contemplativo",
+        intensidad: "Muy alta",
+        idealPara: "Querés un romance profundo, delicado y con una carga emocional importante",
+        fraseEjemplo: "Quiero una historia de amor prohibido y llena de sentimientos",
+        sinopsis: "En la década de 1950, una joven empleada de una tienda conoce a Carol, una mujer mayor y casada. Entre ambas surge una relación que desafía las convenciones sociales de la época.",
+        porQueVerla: "Se destaca por su fotografía, actuaciones y la sensibilidad con la que representa un amor condicionado por su contexto.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTczNTQ4OTEyNV5BMl5BanBnXkFtZTgwNDgyMDI3NjE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "brooklyn",
+        categoria: "Romance",
+        titulo: "Brooklyn",
+        anio: "2015",
+        pais: "Irlanda / Reino Unido / Canadá",
+        director: "John Crowley",
+        emocion: "Nostalgia y amor",
+        tono: "Cálido, romántico y melancólico",
+        ritmo: "Moderado y progresivo",
+        intensidad: "Alta",
+        idealPara: "Querés una historia de amor atravesada por decisiones difíciles y nuevos comienzos",
+        fraseEjemplo: "Quiero un romance emotivo sobre elegir entre dos caminos",
+        sinopsis: "Una joven irlandesa emigra a Nueva York en busca de nuevas oportunidades. Allí encuentra el amor, pero una situación familiar la obliga a regresar a su país y replantearse su futuro.",
+        porQueVerla: "Retrata el amor, la nostalgia por el hogar y las decisiones que cambian el rumbo de una vida.",
+        dondeVerla: "Prime Video / Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMzE4MDk5NzEyOV5BMl5BanBnXkFtZTgwNDM4NDA3NjE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "worst-person-in-the-world",
+        categoria: "Romance",
+        titulo: "La peor persona del mundo",
+        anio: "2021",
+        pais: "Noruega / Francia / Suecia / Dinamarca",
+        director: "Joachim Trier",
+        emocion: "Confusión e incertidumbre",
+        tono: "Realista, introspectivo y agridulce",
+        ritmo: "Moderado",
+        intensidad: "Alta",
+        idealPara: "Estás pensando en el amor, las relaciones y las decisiones de la vida",
+        fraseEjemplo: "Quiero una película romántica que se sienta real y no idealice el amor",
+        sinopsis: "Julie está cerca de cumplir treinta años y atraviesa una etapa de incertidumbre personal y sentimental mientras intenta descubrir qué quiere de la vida, experimentando diferentes relaciones amorosas.",
+        porQueVerla: "Presenta una mirada honesta sobre las dudas, el crecimiento personal y el miedo a tomar decisiones.",
+        dondeVerla: "MUBI",
+        imagen: "https://m.media-amazon.com/images/M/MV5BZmYzNmZkNzItM2Q2Zi00Y2ExLWJmNzMtYzZhYzQ5NzYzY2I1XkEyXkFqcGdeQXVyMTM1MTE1NDMx._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "the-holiday",
+        categoria: "Romance",
+        titulo: "The Holiday (El descanso)",
+        anio: "2006",
+        pais: "Estados Unidos / Reino Unido",
+        director: "Nancy Meyers",
+        emocion: "Alegría y esperanza",
+        tono: "Cálido, divertido y reconfortante",
+        ritmo: "Ágil y relajado",
+        intensidad: "Media",
+        idealPara: "Querés una película romántica, liviana y acogedora",
+        fraseEjemplo: "Quiero algo romántico, divertido y que me haga sentir bien",
+        sinopsis: "Dos mujeres que atraviesan desilusiones amorosas deciden intercambiar sus casas durante las vacaciones de Navidad, donde conocen personas que cambiarán sus vidas.",
+        porQueVerla: "Es una comedia romántica ideal para desconectar, con dos historias paralelas y una atmósfera muy cálida.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTI1MDk4MzA2OF5BMl5BanBnXkFtZTYwMjQ3NDc3._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "past-lives",
+        categoria: "Romance",
+        titulo: "Vidas pasadas (Past Lives)",
+        anio: "2023",
+        pais: "Corea del Sur / Estados Unidos",
+        director: "Celine Song",
+        emocion: "Nostalgia y melancolía",
+        tono: "Íntimo, sensible y reflexivo",
+        ritmo: "Lento y contemplativo",
+        intensidad: "Alta",
+        idealPara: "Tenés ganas de ver una historia de amor que te deje pensando",
+        fraseEjemplo: "Quiero una película romántica, nostálgica y un poco triste",
+        sinopsis: "Dos amigos de la infancia se separan cuando la familia de ella emigra de Corea del Sur. Veinte años después se reencuentran y reflexionan sobre el destino, el amor y las decisiones de la vida.",
+        porQueVerla: "Presenta una historia muy humana sobre los amores que pudieron ser y los vínculos que permanecen a pesar del tiempo.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BOTkzYmMxNTItZDAxNC00NGM0LWIyODMtMWYzMzRkMjIyMTE1XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "call-me-by-your-name",
+        categoria: "Romance",
+        titulo: "Call Me by Your Name",
+        anio: "2017",
+        pais: "Italia / Francia / Estados Unidos",
+        director: "Luca Guadagnino",
+        emocion: "Primer amor / Deseo",
+        tono: "Íntimo, sensible y melancólico",
+        ritmo: "Tranquilo",
+        intensidad: "Muy alta",
+        idealPara: "Querés una historia de amor intensa, sensible y nostálgica",
+        fraseEjemplo: "Quiero una historia de amor profunda que me haga sentir y recordar",
+        sinopsis: "Durante un verano en el norte de Italia, Elio, un joven de 17 años, conoce a Oliver, un estudiante universitario que llega a trabajar con su padre. Entre ambos surge una relación marcada por el descubrimiento, el deseo y el primer amor.",
+        porQueVerla: "Porque retrata de forma muy sensible la intensidad del primer amor, el verano y la nostalgia por una experiencia que termina.",
+        dondeVerla: "Netflix / YouTube",
+        imagen: "https://m.media-amazon.com/images/M/MV5BNDk3NTEwNjc0MV5BMl5BanBnXkFtZTgwNzYxNTMwMzI@._V1_FMjpg_UX1000_.jpg"
+      },
+
+      // --- MOTIVADORAS / INSPIRADORAS ---
+      {
+        id: "marty-supreme",
+        categoria: "Motivadoras/Inspiradoras",
+        titulo: "Marty Supreme",
+        anio: "2025",
+        pais: "Estados Unidos",
+        director: "Josh Safdie",
+        emocion: "Inspiración / Motivación",
+        tono: "Intenso y vibrante",
+        ritmo: "Ágil",
+        intensidad: "Alta",
+        idealPara: "Querés una historia de ambición desmedida, con mucha energía",
+        fraseEjemplo: "Quiero algo con mucha energía sobre perseguir un sueño",
+        sinopsis: "Un joven jugador de tenis de mesa, ambicioso, hace lo que sea para convertirse en campeón en el Nueva York de los años 50.",
+        porQueVerla: "Tiene un ritmo frenético y un protagonista obsesionado con el éxito que no siempre es simpático.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMjI0OTkzNzQ2OV5BMl5BanBnXkFtZTgwMzU1NzM5NjM@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "8-millas",
+        categoria: "Motivadoras/Inspiradoras",
+        titulo: "8 Millas",
+        anio: "2002",
+        pais: "Estados Unidos",
+        director: "Curtis Hanson",
+        emocion: "Inspiración / Motivación",
+        tono: "Crudo y determinado",
+        ritmo: "Medio",
+        intensidad: "Media",
+        idealPara: "Necesitás ganas de no rendirte, con música de por medio",
+        fraseEjemplo: "Quiero algo que me dé ganas de no rendirme",
+        sinopsis: "Un joven aspirante a rapero de Detroit intenta salir adelante entre problemas familiares y económicos, con las batallas de rap como oportunidad.",
+        porQueVerla: "Es una historia de superación con música, con un final muy potente.",
+        dondeVerla: "Apple TV / Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BOWI3Y2U3MzUtMjU5My00YjFjLWJjN2EtYjU3MjU1NjM0OWVmXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "whiplash",
+        categoria: "Motivadoras/Inspiradoras",
+        titulo: "Whiplash",
+        anio: "2014",
+        pais: "Estados Unidos",
+        director: "Damien Chazelle",
+        emocion: "Inspiración / Motivación",
+        tono: "Oscuro e intenso",
+        ritmo: "Ágil",
+        intensidad: "Alta",
+        idealPara: "Querés algo intenso sobre esforzarte hasta el límite",
+        fraseEjemplo: "Quiero algo intenso sobre esforzarse al máximo",
+        sinopsis: "Un joven baterista de jazz entra a un conservatorio de élite y se enfrenta a un profesor exigente y abusivo que lo empuja al límite.",
+        porQueVerla: "Es muy intensa y plantea hasta dónde se puede llegar por la ambición.",
+        dondeVerla: "Prime Video / Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BOTA5NDZlZGUtMjAxOS00YTRkLTkwYmMtYWQ0NWEwZDZiNjEzXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "una-mente-maravillosa",
+        categoria: "Motivadoras/Inspiradoras",
+        titulo: "Una mente maravillosa",
+        anio: "2001",
+        pais: "Estados Unidos",
+        director: "Ron Howard",
+        emocion: "Inspiración / Motivación",
+        tono: "Emotivo y profundo",
+        ritmo: "Medio",
+        intensidad: "Alta",
+        idealPara: "Querés una historia real de superación personal",
+        fraseEjemplo: "Quiero una historia real de superación",
+        sinopsis: "Inspirada en la vida del brillante matemático John Nash, que desarrolla teorías revolucionarias mientras lucha contra la esquizofrenia y aprende a convivir con ella.",
+        porQueVerla: "Es una historia de resiliencia, con una actuación muy destacada.",
+        dondeVerla: "Paramount+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMzcwYWFkYzktZjAzNC00OGY1LWI4YTgtNzc5MzVjMDVmNjY0XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "billy-elliot",
+        categoria: "Motivadoras/Inspiradoras",
+        titulo: "Billy Elliot",
+        anio: "2000",
+        pais: "Reino Unido",
+        director: "Stephen Daldry",
+        emocion: "Valentía",
+        tono: "Emotivo e inspirador",
+        ritmo: "Progresivo",
+        intensidad: "Media / Alta",
+        idealPara: "Querés animarte a perseguir tus sueños",
+        fraseEjemplo: "Quiero una película que me inspire a hacer lo que realmente me gusta",
+        sinopsis: "Un niño descubre su pasión por el ballet a pesar de los prejuicios de su entorno.",
+        porQueVerla: "Invita a superar los prejuicios y confiar en las propias capacidades.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMjE2MjY3Mjg5OF5BMl5BanBnXkFtZTcwMzI3NDIyMQ@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "joy",
+        categoria: "Motivadoras/Inspiradoras",
+        titulo: "Joy: El nombre del éxito",
+        anio: "2015",
+        pais: "Estados Unidos",
+        director: "David O. Russell",
+        emocion: "Determinación",
+        tono: "Drama inspirador",
+        ritmo: "Medio",
+        intensidad: "Media",
+        idealPara: "Necesitás motivación para emprender o crear",
+        fraseEjemplo: "Quiero animarme a creer en mis ideas",
+        sinopsis: "Una mujer lucha por convertir un invento propio en un negocio exitoso.",
+        porQueVerla: "Motiva a confiar en las ideas propias y seguir adelante pese a los obstáculos.",
+        dondeVerla: "Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMzc2MTI5Mzk0MV5BMl5BanBnXkFtZTgwMDIxMDg1NzE@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "la-teoria-del-todo",
+        categoria: "Motivadoras/Inspiradoras",
+        titulo: "La teoría del todo",
+        anio: "2014",
+        pais: "Reino Unido",
+        director: "James Marsh",
+        emocion: "Esperanza",
+        tono: "Biográfico y emotivo",
+        ritmo: "Medio",
+        intensidad: "Alta",
+        idealPara: "Necesitás una historia que te haga reflexionar y valorar la vida",
+        fraseEjemplo: "Quiero ver algo que me cambie la perspectiva",
+        sinopsis: "Relata la vida del científico Stephen Hawking, su carrera y su relación con Jane Wilde.",
+        porQueVerla: "Muestra los desafíos personales y profesionales de una figura extraordinaria.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMTAwMTU4MDA3NDNeQTJeQWpwZ15BbWU4MDk4NTMxNTIx._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "yo-adolescente",
+        categoria: "Motivadoras/Inspiradoras",
+        titulo: "Yo adolescente",
+        anio: "2019",
+        pais: "Argentina",
+        director: "Lucas Santa Ana",
+        emocion: "Inspiración / Motivación",
+        tono: "Cercano y honesto",
+        ritmo: "Medio",
+        intensidad: "Alta",
+        idealPara: "Querés un retrato honesto de la adolescencia, en clave rioplatense",
+        fraseEjemplo: "Quiero una película argentina sobre la adolescencia",
+        sinopsis: "A punto de cumplir 17 años, Zabo atraviesa la muerte de su mejor amigo y el distanciamiento de sus padres, y vuelca lo que siente en su blog.",
+        porQueVerla: "Es un retrato cercano y crudo de la adolescencia, con un contexto que resulta muy familiar en la región.",
+        dondeVerla: "YouTube",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMjQ3Y2ZkMzYtZDc5Yy00ZmZlLWI3ZjUtN2M1YjNkY2I3ZDE1XkEyXkFqcGdeQXVyMTA0MjU0Ng@@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "hidden-figures",
+        categoria: "Motivadoras/Inspiradoras",
+        titulo: "Talentos ocultos (Hidden Figures)",
+        anio: "2016",
+        pais: "Estados Unidos",
+        director: "Theodore Melfi",
+        emocion: "Inspiración y orgullo",
+        tono: "Motivador, emotivo y optimista",
+        ritmo: "Ágil y progresivo",
+        intensidad: "Alta",
+        idealPara: "Necesitás un impulso para perseguir tus objetivos y superar obstáculos",
+        fraseEjemplo: "Quiero una historia de personas que lograron lo que parecía imposible",
+        sinopsis: "Narra la historia real de tres matemáticas afroamericanas que trabajaron en la NASA durante la carrera espacial y fueron fundamentales para el éxito de una misión histórica.",
+        porQueVerla: "Muestra cómo el talento, la perseverancia y la confianza pueden superar barreras sociales y profesionales.",
+        dondeVerla: "Disney+",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMzg2Mzg4YmUtNDdkNy00NWY1LWE3NmEtZWMwNGNlMzE5YzU3XkEyXkFqcGdeQXVyMjA5MTIzMjQ@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "lion",
+        categoria: "Motivadoras/Inspiradoras",
+        titulo: "Lion (Un camino a casa)",
+        anio: "2016",
+        pais: "Australia / Reino Unido / India",
+        director: "Garth Davis",
+        emocion: "Esperanza y perseverancia",
+        tono: "Emotivo, dramático y conmovedor",
+        ritmo: "Progresivo",
+        intensidad: "Muy alta",
+        idealPara: "Querés una historia que te conmueva y te recuerde la importancia de no perder la esperanza",
+        fraseEjemplo: "Quiero una película emotiva sobre superar dificultades y nunca dejar de buscar lo que importa",
+        sinopsis: "Saroo, un niño de cinco años, se pierde en India y termina siendo adoptado por una familia australiana. Veinticinco años después decide buscar sus orígenes y reencontrarse con su familia biológica.",
+        porQueVerla: "Demuestra la fuerza de la memoria, la determinación y la esperanza frente a circunstancias muy difíciles.",
+        dondeVerla: "Prime Video",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMjA3NjkzNjg2MF5BMl5BanBnXkFtZTgwMDkyMzgzMDI@._V1_FMjpg_UX1000_.jpg"
+      },
+      {
+        id: "el-nino-que-domo-el-viento",
+        categoria: "Motivadoras/Inspiradoras",
+        titulo: "El niño que domó el viento",
+        anio: "2019",
+        pais: "Malaui / Reino Unido",
+        director: "Chiwetel Ejiofor",
+        emocion: "Esperanza y determinación",
+        tono: "Inspirador, emotivo y realista",
+        ritmo: "Progresivo",
+        intensidad: "Alta",
+        idealPara: "Necesitás motivación y querés recordar que incluso las ideas más pequeñas pueden generar grandes cambios",
+        fraseEjemplo: "Quiero una película que me inspire a no rendirme",
+        sinopsis: "Basada en una historia real, cuenta la vida de William, un adolescente de Malaui que, frente a una grave crisis alimentaria, construye un molino de viento para ayudar a su comunidad.",
+        porQueVerla: "Transmite perseverancia, creatividad y la importancia de confiar en las propias capacidades incluso cuando todo parece estar en contra.",
+        dondeVerla: "Netflix",
+        imagen: "https://m.media-amazon.com/images/M/MV5BMjI0OTkzNzQ2OV5BMl5BanBnXkFtZTgwMzU1NzM5NjM@._V1_FMjpg_UX1000_.jpg"
+      }
+    ];
+
+    // Estado de la conversación
+    let chatHistory = []; // Array de { role: 'user' | 'model', text: string }
+    let userTurnCount = 0;
+    let isLoading = false;
+    let lastRecommendations = null; // Guarda la recomendación principal y las 3 secundarias para el modal
+
+    // Referencias al DOM
+    const chatMessagesEl = document.getElementById('chatMessages');
+    const chatForm = document.getElementById('chatForm');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const typingIndicator = document.getElementById('typingIndicator');
+    const resetBtn = document.getElementById('resetBtn');
+    const movieModal = document.getElementById('movieModal');
+    const modalContent = document.getElementById('modalContent');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    /**
+     * Genera el catálogo resumido para inyectarlo en el System Instruction del LLM
+     * Incluye los campos internos `idealPara` y `fraseEjemplo` exclusivamente para el criterio del modelo.
+     */
+    function buildCatalogForSystemPrompt() {
+      return MOVIE_CATALOG.map(m => (
+        `- ID: "${m.id}" | Título: "${m.titulo}" (${m.anio}) | Categoría: ${m.categoria} | Emoción: ${m.emocion} | Tono: ${m.tono} | Ritmo: ${m.ritmo} | Intensidad: ${m.intensidad} | [Guía interna - Ideal para cuando]: ${m.idealPara} | [Guía interna - Frase ejemplo]: ${m.fraseEjemplo}`
+      )).join('\n');
+    }
+
+    /**
+     * Construye las instrucciones del sistema para Gemini siguiendo las reglas estrictas de MUDIE
+     */
+    function buildSystemInstruction() {
+      return `Eres MUDIE, un asistente conversacional empático, cálido y reflexivo especializado en recomendación de películas según el estado de ánimo y la sensibilidad del usuario. Tu objetivo es conectar genuinamente con la persona, comprender cómo se siente y guiarla hacia una obra cinematográfica de nuestra base de datos que resuene con su momento vital.
+
+REGLAS CRÍTICAS DE COMPORTAMIENTO Y FLUJO CONVERSACIONAL:
+1. NUNCA menciones ni muestres en tus respuestas al usuario números de paso, turnos o etapas (no digas "Intercambio 1", "Paso 2", "Beta", "MVP", etc.). Mantén una charla orgánica y humana.
+2. NUNCA menciones ni cites textualmente los campos internos [Guía interna - Ideal para cuando] ni [Guía interna - Frase ejemplo]. Úsalos únicamente de manera silenciosa para comprender qué película encaja mejor con la persona.
+3. FLUJO DE PROFUNDIZACIÓN OBLIGATORIO (MÍNIMO 3 INTERVENCIONES DEL USUARIO ANTES DE RECOMENDAR):
+   - Actualmente el usuario ha enviado ${userTurnCount} mensaje(s) en esta conversación.
+   - Si userTurnCount es 1: Escucha activamente lo que compartió, valida sus emociones de forma empática y sin juzgar, y haz una pregunta abierta y cálida para profundizar en los matices de lo que siente o en el tipo de experiencia emocional que busca hoy (por ejemplo: si necesita desconectar, catarsis, algo suave y contemplativo, ritmo ágil, compañía o reflexión). En este turno debes devolver "isRecommendation": false.
+   - Si userTurnCount es 2: Recoge con cercanía todo lo que el usuario ha compartido hasta ahora, confirma que comprendes los matices de su estado subjetivo y haz una última pregunta breve de sintonía fina (o confirma un último matiz sobre el ritmo/atmósfera que prefiere para terminar de afinar la elección) anunciando con calidez que ya estás preparando una película muy especial para acompañarle. En este turno debes devolver "isRecommendation": false.
+   - Si userTurnCount es >= 3: Ya has escuchado y comprendido profundamente al usuario. Ahora debes entregar la recomendación final ("isRecommendation": true).
+4. REGLA DE EXCEPCIÓN SI NO HAY COINCIDENCIA EXACTA:
+   - Si el estado de ánimo o pedido específico del usuario no encaja exactamente con ninguna película del catálogo disponible, DEBES aclararlo explícitamente y con empatía en tu mensaje (por ejemplo: diciendo claramente que en este momento no tienes una película que se ajuste exactamente a ese estado de ánimo tan particular, pero que has elegido una obra principal y tres alternativas cercanas que podrían resonar muy bien con lo que busca). Pon "noExactMatch": true en el JSON. Si sí hay una buena coincidencia, pon "noExactMatch": false.
+5. SELECCIÓN DE PELÍCULAS (CUANDO "isRecommendation" ES true):
+   - Debes seleccionar EXACTAMENTE 1 película principal ("primaryMovieId") y EXACTAMENTE 3 películas secundarias/terciarias distintas ("secondaryMovieIds", array de 3 IDs) del catálogo proporcionado abajo.
+   - Para la película principal, escribe en "primaryWhyFitsToday" una explicación reflexiva, empática y personalizada (3 a 5 líneas) conectando explícitamente lo que el usuario te compartió durante toda la conversación con la atmósfera, el tono y la temática de esa película.
+   - Para cada una de las 3 películas secundarias, escribe en "secondaryWhyFits" (array de 3 textos en el mismo orden de "secondaryMovieIds") una explicación reflexiva breve y personalizada (2 a 3 líneas) de por qué esa alternativa también dialoga con su momento actual.
+   - En "message", escribe una introducción cálida y empática presentando la recomendación (e incluyendo la aclaración explícita si "noExactMatch" es true), SIN repetir toda la ficha técnica que ya se mostrará visualmente en la tarjeta.
+
+CATÁLOGO DISPONIBLE (USA ÚNICAMENTE ESTOS IDs):
+${buildCatalogForSystemPrompt()}`;
+    }
+
+    /**
+     * Esquema JSON estructurado para la respuesta de Gemini API
+     */
+    const RESPONSE_SCHEMA = {
+      type: "OBJECT",
+      properties: {
+        message: {
+          type: "STRING",
+          description: "Mensaje conversacional cálido, empático y reflexivo de MUDIE hacia el usuario."
+        },
+        isRecommendation: {
+          type: "BOOLEAN",
+          description: "true únicamente cuando ya se han cumplido al menos 3 mensajes del usuario y se entrega la recomendación final; false durante la conversación exploratoria."
+        },
+        noExactMatch: {
+          type: "BOOLEAN",
+          description: "true si no se encontró una película exacta para el estado de ánimo del usuario y se ofrecen alternativas cercanas; false si hay coincidencia adecuada."
+        },
+        primaryMovieId: {
+          type: "STRING",
+          description: "ID exacto de la película principal recomendada del catálogo (vacío si isRecommendation es false)."
+        },
+        primaryWhyFitsToday: {
+          type: "STRING",
+          description: "Explicación reflexiva explícita, empática y personalizada conectando lo conversado con la película principal."
+        },
+        secondaryMovieIds: {
+          type: "ARRAY",
+          items: { type: "STRING" },
+          description: "Array con exactamente 3 IDs distintos de películas secundarias/terciarias del catálogo."
+        },
+        secondaryWhyFits: {
+          type: "ARRAY",
+          items: { type: "STRING" },
+          description: "Array con 3 explicaciones personalizadas (una por cada película secundaria) explicando cómo conecta con el estado del usuario."
+        }
+      },
+      required: ["message", "isRecommendation", "noExactMatch"]
+    };
+
+    /**
+     * Llamada a Gemini API con exponential backoff
+     */
+    async function callGeminiAPI() {
+      const apiKey = ""; // Inyectado automáticamente en tiempo de ejecución
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      const contents = chatHistory.map(turn => ({
+        role: turn.role,
+        parts: [{ text: turn.text }]
+      }));
+
+      const payload = {
+        contents,
+        systemInstruction: {
+          parts: [{ text: buildSystemInstruction() }]
+        },
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: RESPONSE_SCHEMA,
+          temperature: 0.75
+        }
+      };
+
+      const delays = [1000, 2000, 4000, 8000];
+      let lastError = null;
+
+      for (let attempt = 0; attempt <= delays.length; attempt++) {
+        try {
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error ${response.status}`);
+          }
+
+          const result = await response.json();
+          const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (!rawText) {
+            throw new Error("Respuesta vacía del modelo");
+          }
+
+          return JSON.parse(rawText);
+        } catch (err) {
+          lastError = err;
+          if (attempt < delays.length) {
+            await new Promise(res => setTimeout(res, delays[attempt]));
+          }
+        }
+      }
+
+      throw lastError;
+    }
+
+    /**
+     * Escapa HTML para evitar inyecciones XSS en texto libre
+     */
+    function escapeHTML(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    /**
+     * Formatea saltos de línea y negritas sencillas en texto conversacional
+     */
+    function formatMessageText(text) {
+      const escaped = escapeHTML(text);
+      return escaped
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="text-purple-100 font-semibold">$1</strong>')
+        .replace(/\n/g, '<br>');
+    }
+
+    /**
+     * Genera el HTML de una imagen de película con fallback elegante SVG/CSS en violeta y lila
+     */
+    function renderPosterHTML(movie, sizeClass = "w-full h-full") {
+      const safeTitle = escapeHTML(movie.titulo);
+      const safeDirector = escapeHTML(movie.director);
+      const safeYear = escapeHTML(movie.anio);
+
+      return `
+        <div class="relative ${sizeClass} overflow-hidden poster-fallback flex items-center justify-center">
+          <img
+            src="${escapeHTML(movie.imagen)}"
+            alt="Póster de ${safeTitle}"
+            loading="lazy"
+            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.classList.add('flex');"
+          />
+          <div class="hidden absolute inset-0 flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-[#2D1657] via-[#190D33] to-[#0B0616] border border-[#C084FC]/20">
+            <svg class="w-9 h-9 text-[#C084FC]/70 mb-2.5 shrink-0" viewBox="0 0 32 32" fill="none">
+              <rect x="4" y="6" width="24" height="5" rx="1.5" fill="#2D1657" stroke="#C084FC" stroke-width="1.5"/>
+              <rect x="4" y="12.5" width="24" height="14" rx="2" fill="#120924" stroke="#C084FC" stroke-width="1.5"/>
+              <path d="M13.5 16.5L19.5 19.5L13.5 22.5V16.5Z" fill="#C084FC"/>
+            </svg>
+            <p class="font-serif text-sm sm:text-base font-bold text-purple-100 leading-snug line-clamp-3">${safeTitle}</p>
+            <p class="text-[11px] text-[#C084FC] mt-1">${safeYear}</p>
+            <p class="text-[10px] text-purple-300/70 mt-0.5 line-clamp-1">${safeDirector}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    /**
+     * Busca una película por ID con respaldo seguro si el LLM devolviera un ID aproximado
+     */
+    function findMovieById(id, excludeIds = []) {
+      let found = MOVIE_CATALOG.find(m => m.id === id && !excludeIds.includes(m.id));
+      if (!found && id) {
+        const lower = id.toLowerCase();
+        found = MOVIE_CATALOG.find(m =>
+          !excludeIds.includes(m.id) &&
+          (m.id.includes(lower) || m.titulo.toLowerCase().includes(lower))
+        );
+      }
+      if (!found) {
+        found = MOVIE_CATALOG.find(m => !excludeIds.includes(m.id));
+      }
+      return found;
+    }
+
+    /**
+     * Renderiza un mensaje del usuario en el chat
+     */
+    function appendUserMessage(text) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex justify-end msg-enter';
+      wrapper.innerHTML = `
+        <div class="max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-sm px-4 py-3 bg-gradient-to-br from-[#2D1657] to-[#231046] border border-[#C084FC]/30 text-purple-50 text-sm sm:text-base leading-relaxed shadow-lg shadow-black/25">
+          ${formatMessageText(text)}
+        </div>
+      `;
+      chatMessagesEl.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    /**
+     * Renderiza un mensaje conversacional simple de MUDIE
+     */
+    function appendBotMessage(text) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex items-start gap-3 msg-enter';
+      wrapper.innerHTML = `
+        <div class="w-8 h-8 rounded-xl bg-[#190D33] border border-[#C084FC]/40 flex items-center justify-center shrink-0 mt-0.5 shadow-md">
+          <svg class="w-4 h-4" viewBox="0 0 32 32" fill="none">
+            <rect x="4" y="6" width="24" height="5" rx="1.5" fill="#2D1657" stroke="#C084FC" stroke-width="1.6"/>
+            <rect x="4" y="12.5" width="24" height="14" rx="2" fill="#120924" stroke="#C084FC" stroke-width="1.6"/>
+            <path d="M13.5 16.5L19.5 19.5L13.5 22.5V16.5Z" fill="#C084FC"/>
+          </svg>
+        </div>
+        <div class="max-w-[88%] sm:max-w-[80%] rounded-2xl rounded-tl-sm px-4 py-3.5 bg-[#120924] border border-[#2D1657] text-purple-100/95 text-sm sm:text-base leading-relaxed shadow-lg shadow-black/30">
+          ${formatMessageText(text)}
+        </div>
+      `;
+      chatMessagesEl.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    /**
+     * Renderiza la tarjeta completa de Recomendación Final (1 Principal + 3 Secundarias/Terciarias)
+     */
+    function appendRecommendationMessage(data) {
+      const primaryMovie = findMovieById(data.primaryMovieId);
+      const usedIds = [primaryMovie.id];
+
+      const secondaryMovies = [];
+      const rawSecIds = Array.isArray(data.secondaryMovieIds) ? data.secondaryMovieIds : [];
+      const rawSecWhys = Array.isArray(data.secondaryWhyFits) ? data.secondaryWhyFits : [];
+
+      for (let i = 0; i < 3; i++) {
+        const secMovie = findMovieById(rawSecIds[i], usedIds);
+        if (secMovie) {
+          usedIds.push(secMovie.id);
+          secondaryMovies.push({
+            movie: secMovie,
+            whyFits: rawSecWhys[i] || `Una alternativa con atmósfera ${secMovie.tono.toLowerCase()} que acompaña la sensibilidad que compartiste hoy.`
+          });
+        }
+      }
+
+      const primaryWhy = data.primaryWhyFitsToday || primaryMovie.porQueVerla;
+
+      // Guardamos en estado global para abrir el modal al hacer clic
+      lastRecommendations = {
+        primary: { movie: primaryMovie, whyFits: primaryWhy },
+        secondaries: secondaryMovies
+      };
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex items-start gap-3 msg-enter';
+
+      const noMatchBadge = data.noExactMatch
+        ? `<div class="mb-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#2D1657]/80 border border-[#C084FC]/40 text-xs text-purple-200">
+            <span class="w-2 h-2 rounded-full bg-[#C084FC]"></span>
+            <span>Sugerencia afín explorando nuevos matices para tu momento</span>
+           </div>`
+        : '';
+
+      wrapper.innerHTML = `
+        <div class="w-8 h-8 rounded-xl bg-[#190D33] border border-[#C084FC]/40 flex items-center justify-center shrink-0 mt-0.5 shadow-md">
+          <svg class="w-4 h-4" viewBox="0 0 32 32" fill="none">
+            <rect x="4" y="6" width="24" height="5" rx="1.5" fill="#2D1657" stroke="#C084FC" stroke-width="1.6"/>
+            <rect x="4" y="12.5" width="24" height="14" rx="2" fill="#120924" stroke="#C084FC" stroke-width="1.6"/>
+            <path d="M13.5 16.5L19.5 19.5L13.5 22.5V16.5Z" fill="#C084FC"/>
+          </svg>
+        </div>
+
+        <div class="flex-1 min-w-0 space-y-5">
+          <!-- Mensaje introductorio empático -->
+          <div class="rounded-2xl rounded-tl-sm px-4 py-3.5 bg-[#120924] border border-[#2D1657] text-purple-100/95 text-sm sm:text-base leading-relaxed shadow-lg">
+            ${noMatchBadge}
+            <div>${formatMessageText(data.message)}</div>
+          </div>
+
+          <!-- TARJETA DE PELÍCULA PRINCIPAL RECOMENDADA -->
+          <article class="rounded-3xl bg-gradient-to-b from-[#190D33] to-[#120924] border border-[#C084FC]/40 overflow-hidden shadow-2xl shadow-purple-950/60">
+            <div class="px-5 py-3 bg-[#2D1657]/60 border-b border-[#3B1E73] flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-widest text-[#C084FC] flex items-center gap-2">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z"/></svg>
+                Elección principal para ti
+              </span>
+              <span class="text-xs text-purple-300/80">${escapeHTML(primaryMovie.categoria)}</span>
+            </div>
+
+            <div class="p-5 sm:p-6">
+              <div class="flex flex-col md:flex-row gap-6">
+                <!-- Póster -->
+                <div class="w-44 sm:w-48 md:w-52 aspect-[2/3] mx-auto md:mx-0 shrink-0 rounded-2xl overflow-hidden border border-[#C084FC]/30 shadow-xl group">
+                  ${renderPosterHTML(primaryMovie)}
+                </div>
+
+                <!-- Ficha técnica y emocional -->
+                <div class="flex-1 space-y-4">
+                  <div>
+                    <h2 class="font-serif text-2xl sm:text-3xl font-bold text-white leading-tight">
+                      ${escapeHTML(primaryMovie.titulo)} <span class="text-[#C084FC] font-sans font-normal text-lg sm:text-xl">(${escapeHTML(primaryMovie.anio)})</span>
+                    </h2>
+                    <p class="text-xs sm:text-sm text-purple-200/85 mt-1.5">
+                      <strong class="text-purple-100">Dirigida por:</strong> ${escapeHTML(primaryMovie.director)}
+                      <span class="mx-2 text-purple-500">|</span>
+                      <strong class="text-purple-100">País/Región:</strong> ${escapeHTML(primaryMovie.pais)}
+                    </p>
+                  </div>
+
+                  <!-- Badges de atributos emocionales -->
+                  <div class="flex flex-wrap gap-2 text-xs">
+                    <span class="px-3 py-1.5 rounded-xl bg-[#2D1657] border border-[#C084FC]/35 text-purple-100">
+                      <strong class="text-[#C084FC]">Emoción principal:</strong> ${escapeHTML(primaryMovie.emocion)}
+                    </span>
+                    <span class="px-3 py-1.5 rounded-xl bg-[#120924] border border-[#3B1E73] text-purple-200">
+                      <strong class="text-[#C084FC]">Tono:</strong> ${escapeHTML(primaryMovie.tono)}
+                    </span>
+                    <span class="px-3 py-1.5 rounded-xl bg-[#120924] border border-[#3B1E73] text-purple-200">
+                      <strong class="text-[#C084FC]">Ritmo:</strong> ${escapeHTML(primaryMovie.ritmo)}
+                    </span>
+                  </div>
+
+                  <!-- Sinopsis -->
+                  <div class="space-y-1">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-[#C084FC]">Sinopsis</h3>
+                    <p class="text-sm text-purple-100/90 leading-relaxed">${escapeHTML(primaryMovie.sinopsis)}</p>
+                  </div>
+
+                  <!-- ¿Por qué verla? -->
+                  <div class="space-y-1">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-[#C084FC]">¿Por qué verla?</h3>
+                    <p class="text-sm text-purple-100/90 leading-relaxed">${escapeHTML(primaryMovie.porQueVerla)}</p>
+                  </div>
+
+                  <!-- ¿Dónde verla? -->
+                  <div class="flex items-center gap-2 pt-1 text-sm">
+                    <span class="px-3 py-1.5 rounded-xl bg-purple-500/15 border border-purple-400/30 text-purple-100">
+                      <strong class="text-[#C084FC]">¿Dónde verla?:</strong> ${escapeHTML(primaryMovie.dondeVerla)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Explicación reflexiva personalizada -->
+              <div class="mt-6 p-4 sm:p-5 rounded-2xl bg-[#2D1657]/55 border border-[#C084FC]/40">
+                <h3 class="text-sm font-semibold text-[#E9D5FF] mb-1.5 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-[#C084FC] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                  ¿Por qué esta película se adapta a lo que sientes hoy?
+                </h3>
+                <p class="text-sm sm:text-[15px] text-purple-50 leading-relaxed">
+                  ${formatMessageText(primaryWhy)}
+                </p>
+              </div>
+            </div>
+          </article>
+
+          <!-- OTRAS 3 OPCIONES PARA EXPLORAR (SECUNDARIAS Y TERCIARIAS) -->
+          <section class="space-y-3">
+            <div class="flex items-center justify-between px-1">
+              <h3 class="text-sm font-semibold text-purple-200 tracking-wide">
+                Otras 3 opciones que también pueden acompañarte
+              </h3>
+              <span class="text-xs text-purple-300/65">Toca una tarjeta para ver su ficha</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              ${secondaryMovies.map((item, idx) => `
+                <button
+                  type="button"
+                  data-sec-index="${idx}"
+                  class="sec-movie-card group text-left rounded-2xl bg-[#120924] hover:bg-[#190D33] border border-[#2D1657] hover:border-[#C084FC]/60 overflow-hidden transition-all duration-200 shadow-lg flex sm:flex-col active:scale-[0.99]"
+                >
+                  <div class="w-24 sm:w-full aspect-[2/3] shrink-0 overflow-hidden">
+                    ${renderPosterHTML(item.movie)}
+                  </div>
+                  <div class="p-3.5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <span class="inline-block text-[10px] font-medium px-2 py-0.5 rounded-md bg-[#2D1657] text-[#C084FC] mb-1.5">
+                        ${escapeHTML(item.movie.emocion)}
+                      </span>
+                      <h4 class="font-semibold text-sm text-purple-50 group-hover:text-[#C084FC] transition-colors line-clamp-2">
+                        ${escapeHTML(item.movie.titulo)}
+                      </h4>
+                      <p class="text-xs text-purple-300/70 mt-0.5">${escapeHTML(item.movie.anio)} · ${escapeHTML(item.movie.director)}</p>
+                    </div>
+                    <div class="mt-3 inline-flex items-center gap-1 text-xs font-medium text-[#C084FC]">
+                      <span>Explorar película</span>
+                      <svg class="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                      </svg>
+                    </div>
+                  </div>
+                </button>
+              `).join('')}
+            </div>
+          </section>
+        </div>
+      `;
+
+      chatMessagesEl.appendChild(wrapper);
+
+      // Enlazar eventos de clic para abrir el modal de cada película secundaria
+      wrapper.querySelectorAll('.sec-movie-card').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.getAttribute('data-sec-index'));
+          const selected = secondaryMovies[idx];
+          if (selected) {
+            openMovieModal(selected.movie, selected.whyFits);
+          }
+        });
+      });
+
+      scrollToBottom();
+    }
+
+    /**
+     * Abre el modal con toda la ficha completa de una película secundaria/terciaria
+     */
+    function openMovieModal(movie, whyFitsToday) {
+      modalContent.innerHTML = `
+        <div class="flex flex-col sm:flex-row gap-6">
+          <div class="w-40 sm:w-44 aspect-[2/3] mx-auto sm:mx-0 shrink-0 rounded-2xl overflow-hidden border border-[#C084FC]/35 shadow-xl">
+            ${renderPosterHTML(movie)}
+          </div>
+
+          <div class="flex-1 space-y-3.5">
+            <div>
+              <span class="inline-block text-[11px] font-semibold uppercase tracking-wider text-[#C084FC] mb-1">
+                ${escapeHTML(movie.categoria)}
+              </span>
+              <h2 id="modalTitle" class="font-serif text-2xl font-bold text-white leading-tight">
+                ${escapeHTML(movie.titulo)} <span class="text-[#C084FC] font-sans font-normal text-base">(${escapeHTML(movie.anio)})</span>
+              </h2>
+              <p class="text-xs sm:text-sm text-purple-200/85 mt-1">
+                <strong class="text-purple-100">Dirigida por:</strong> ${escapeHTML(movie.director)}
+                <span class="mx-1.5 text-purple-500">|</span>
+                <strong class="text-purple-100">País/Región:</strong> ${escapeHTML(movie.pais)}
+              </p>
+            </div>
+
+            <div class="flex flex-wrap gap-2 text-xs">
+              <span class="px-2.5 py-1 rounded-lg bg-[#2D1657] border border-[#C084FC]/35 text-purple-100">
+                <strong class="text-[#C084FC]">Emoción:</strong> ${escapeHTML(movie.emocion)}
+              </span>
+              <span class="px-2.5 py-1 rounded-lg bg-[#190D33] border border-[#3B1E73] text-purple-200">
+                <strong class="text-[#C084FC]">Tono:</strong> ${escapeHTML(movie.tono)}
+              </span>
+              <span class="px-2.5 py-1 rounded-lg bg-[#190D33] border border-[#3B1E73] text-purple-200">
+                <strong class="text-[#C084FC]">Ritmo:</strong> ${escapeHTML(movie.ritmo)}
+              </span>
+            </div>
+
+            <div>
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-[#C084FC] mb-1">Sinopsis</h3>
+              <p class="text-sm text-purple-100/90 leading-relaxed">${escapeHTML(movie.sinopsis)}</p>
+            </div>
+
+            <div>
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-[#C084FC] mb-1">¿Por qué verla?</h3>
+              <p class="text-sm text-purple-100/90 leading-relaxed">${escapeHTML(movie.porQueVerla)}</p>
+            </div>
+
+            <div class="pt-1">
+              <span class="inline-block text-xs sm:text-sm px-3 py-1.5 rounded-xl bg-purple-500/15 border border-purple-400/30 text-purple-100">
+                <strong class="text-[#C084FC]">¿Dónde verla?:</strong> ${escapeHTML(movie.dondeVerla)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 p-4 rounded-2xl bg-[#2D1657]/55 border border-[#C084FC]/40">
+          <h3 class="text-xs sm:text-sm font-semibold text-[#E9D5FF] mb-1">
+            ¿Por qué esta película conecta con lo que sientes hoy?
+          </h3>
+          <p class="text-sm text-purple-50 leading-relaxed">
+            ${formatMessageText(whyFitsToday)}
+          </p>
+        </div>
+      `;
+
+      movieModal.classList.remove('hidden');
+      movieModal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    /**
+     * Cierra el modal de detalle
+     */
+    function closeMovieModal() {
+      movieModal.classList.add('hidden');
+      movieModal.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+
+    /**
+     * Desplaza suavemente al final del chat
+     */
+    function scrollToBottom() {
+      requestAnimationFrame(() => {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: 'smooth'
+        });
+      });
+    }
+
+    /**
+     * Muestra u oculta el indicador de carga
+     */
+    function setLoadingState(loading) {
+      isLoading = loading;
+      sendBtn.disabled = loading;
+      userInput.disabled = loading;
+      if (loading) {
+        typingIndicator.classList.remove('hidden');
+        scrollToBottom();
+      } else {
+        typingIndicator.classList.add('hidden');
+        userInput.focus();
+      }
+    }
+
+    /**
+     * Inicia o reinicia la conversación con el saludo cálido de MUDIE
+     */
+    function initConversation() {
+      chatHistory = [];
+      userTurnCount = 0;
+      lastRecommendations = null;
+      chatMessagesEl.innerHTML = '';
+
+      const welcomeGreeting =
+        "Hola, soy MUDIE. Me alegra mucho encontrarte por aquí.\n\nAntes de pensar en títulos o géneros, me gustaría saber cómo estás tú: ¿cómo te sientes hoy o qué tipo de experiencia emocional te gustaría vivir a través de una película?";
+
+      chatHistory.push({ role: 'model', text: welcomeGreeting });
+      appendBotMessage(welcomeGreeting);
+    }
+
+    /**
+     * Procesa el envío de un mensaje del usuario
+     */
+    async function handleSendMessage(e) {
+      e.preventDefault();
+      if (isLoading) return;
+
+      const text = userInput.value.trim();
+      if (!text) return;
+
+      // Limpiar input y ajustar altura
+      userInput.value = '';
+      userInput.style.height = 'auto';
+
+      // Registrar turno del usuario
+      userTurnCount += 1;
+      chatHistory.push({ role: 'user', text });
+      appendUserMessage(text);
+
+      setLoadingState(true);
+
+      try {
+        const aiResponse = await callGeminiAPI();
+
+        // Asegurar regla de mínimo 3 intercambios antes de entregar recomendación final
+        const shouldShowRecommendation = Boolean(aiResponse.isRecommendation) && userTurnCount >= 3;
+
+        chatHistory.push({
+          role: 'model',
+          text: aiResponse.message
+        });
+
+        setLoadingState(false);
+
+        if (shouldShowRecommendation && aiResponse.primaryMovieId) {
+          appendRecommendationMessage(aiResponse);
+        } else {
+          appendBotMessage(aiResponse.message);
+        }
+      } catch (error) {
+        setLoadingState(false);
+        const fallbackErrorMsg =
+          "Perdona, tuve un pequeño tropiezo al conectar con mis pensamientos cinematográficos. ¿Podrías repetir eso último para que sigamos conversando?";
+        appendBotMessage(fallbackErrorMsg);
+      }
+    }
+
+    // Auto-ajuste de altura del textarea y envío con Enter (sin Shift)
+    userInput.addEventListener('input', () => {
+      userInput.style.height = 'auto';
+      userInput.style.height = Math.min(userInput.scrollHeight, 144) + 'px';
+    });
+
+    userInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        chatForm.dispatchEvent(new Event('submit'));
+      }
+    });
+
+    // Listeners principales
+    chatForm.addEventListener('submit', handleSendMessage);
+    resetBtn.addEventListener('click', () => {
+      if (!isLoading) {
+        initConversation();
+      }
+    });
+
+    closeModalBtn.addEventListener('click', closeMovieModal);
+    movieModal.addEventListener('click', (e) => {
+      if (e.target === movieModal) {
+        closeMovieModal();
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !movieModal.classList.contains('hidden')) {
+        closeMovieModal();
+      }
+    });
+
+    // Arrancar aplicación al cargar
+    window.addEventListener('DOMContentLoaded', initConversation);
+  </script>
+</body>
+</html>
